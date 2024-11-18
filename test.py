@@ -15,13 +15,13 @@ from scipy.stats import multivariate_normal
 
 
 
-x,y = np.mgrid[-4:4:.01, -4:4:.01]
+x,y = np.mgrid[-1:1:.01, -1:1:.01]
 pos = np.dstack((x,y))
 
 def f_wrapper(x,y):
     return f((x,y))
 
-def f(pos, nfunc = 3, ndim = 2, d = 4):
+def f(pos, nfunc = 3, ndim = 2, d = 2):
     
     # mus = [
     #     [0.5, 0], 
@@ -44,16 +44,16 @@ def f(pos, nfunc = 3, ndim = 2, d = 4):
 
     print(mus)
     
-    # covs = [
-    #     np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
-    #     np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
-    #     np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()])
-    #     ]
+    covs = [
+        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
+        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
+        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()])
+        ]
     
-    covs = np.zeros((nfunc, ndim, ndim))
+    # covs = np.zeros((nfunc, ndim, ndim))
     
-    for i in range(0, nfunc):
-        covs[i] = np.diag(0.1 + np.random.rand(ndim))
+    # for i in range(0, nfunc):
+    #     covs[i] = np.diag(0.1 + np.random.rand(ndim))
     
     print(covs)
 
