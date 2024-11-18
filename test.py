@@ -15,13 +15,13 @@ from scipy.stats import multivariate_normal
 
 
 
-x,y = np.mgrid[-1:1:.01, -1:1:.01]
+x,y = np.mgrid[-4:4:.01, -4:4:.01]
 pos = np.dstack((x,y))
 
 def f_wrapper(x,y):
     return f((x,y))
 
-def f(pos):
+def f(pos, nfunc = 3, ndim = 2, d = 4):
     
     # mus = [
     #     [0.5, 0], 
@@ -34,19 +34,29 @@ def f(pos):
     #     np.diag([0.1, 0.1])
     #     ]
     
-    mus = [
-        [2*np.random.rand() - 1, 2*np.random.rand() - 1], 
-        [2*np.random.rand() - 1, 2*np.random.rand() - 1],
-        [2*np.random.rand() - 1, 2*np.random.rand() - 1]
-        ]
+    # mus = [
+    #     [2*np.random.rand() - 1, 2*np.random.rand() - 1], 
+    #     [2*np.random.rand() - 1, 2*np.random.rand() - 1],
+    #     [2*np.random.rand() - 1, 2*np.random.rand() - 1]
+    #     ]
     
-    covs = [
-        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
-        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
-        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()])
-        ]
+    mus = 2 * d * np.random.rand(nfunc, ndim) - d
+
+    print(mus)
     
+    # covs = [
+    #     np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
+    #     np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
+    #     np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()])
+    #     ]
     
+    covs = np.zeros((nfunc, ndim, ndim))
+    
+    for i in range(0, nfunc):
+        covs[i] = np.diag(0.1 + np.random.rand(ndim))
+    
+    print(covs)
+
     z2 = 0
     
     for vals in zip(mus, covs):
