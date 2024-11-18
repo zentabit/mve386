@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal
 
 nin = 2 # N, dimension of invector x
-nout = 2 # M, dimension of outvector y
+nout = 1 # M, dimension of outvector y
 nfunc = 5 # How many gaussians should be used
-peakedness = 100 # To make the gaussians more pointy
+peakedness = 10 # To make the gaussians more pointy
 d = 1 # Side length of the [0,d]^N cube
 
 def plot2d(mus, covs): # plots N = 2, M = 1 distributions on [0,d]^2 (implicity assuming M = 1)
@@ -57,9 +57,8 @@ def f_sca(x, mus, covs): # calculate f when M = 1
 muss, covss = gen_gauss_vec(nfunc, nin, nout, d)
 mus = muss[..., 0]
 covs = covss[..., 0]
-print(np.shape(muss[..., 0]))
-print(f_sca((0.5, 0.5), mus, covs))
+# print(np.shape(muss[..., 0]))
+# print(f_sca((0.5, 0.5), mus, covs))
 print(f_vec((0.5, 0.5), muss, covss))
-
 
 plot2d(mus, covs)
