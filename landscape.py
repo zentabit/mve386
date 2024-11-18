@@ -2,12 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal
 
-ndim = 2
+nin = 2
+nout = 1
 nfunc = 5
 peakedness = 100
 d = 1
 
-def plot2d(mus, covs):
+def plot2d(mus, covs): # we implicitly assume nout = 1
     x1,x2 = np.mgrid[0:d:.001, 0:d:.001]
     pos = np.dstack((x1,x2))
 
@@ -18,13 +19,23 @@ def plot2d(mus, covs):
 
     plt.show()
 
-def generate_mv_gaussians(nfunc, ndim, d):
-    mus = d * np.random.rand(nfunc, ndim)
-    covs = np.zeros((nfunc, ndim, ndim))
+def generate_mv_gaussians(nfunc, nin, d):
+    mus = d * np.random.rand(nfunc, nin)
+    covs = np.zeros((nfunc, nin, nin))
     for i in range(0, nfunc):
-        covs[i] = np.diag(0.05 + np.random.rand(ndim)/peakedness)
+        covs[i] = np.diag(0.01 + np.random.rand(nin)/peakedness)
 
+    print(np.shape(mus))
     return mus, covs
+
+def gen_mv_gaussians_multi_out(nfunc, nin, nout, d):
+    muss = np.zeros((nfunc, nin, nout))
+    covss = np.zeros((nfunc, nin, nin, nout))
+
+    for i in range(0, nout):
+        muss[..., i], covss[..., i] = generate_mv_gaussians(nfunc, nin, d)
+    
+    return muss, covss
 
 def f(x, mus, covs):
     y = 0
@@ -35,7 +46,9 @@ def f(x, mus, covs):
 
     return y
 
-mus, covs = generate_mv_gaussians(nfunc, ndim, d)
+mus, covs = generate_mv_gaussians(nfunc, nin, d)
+muss, covss = gen_mv_gaussians_multi_out(nfunc, nin, nout, d)
+print(np.shape(muss))
 print(f((0.5,0.5), mus, covs))
 
 plot2d(mus, covs)
