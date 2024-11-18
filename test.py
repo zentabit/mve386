@@ -5,33 +5,55 @@ from scipy.stats import multivariate_normal
 
 
 
-# Gör en 2D 100x100 
-n = 2
-x = [ np.linspace(-1,1,num=100) for _ in range(0,n)]
-grid = np.meshgrid(*x)
+# # Gör en 2D 100x100 
+# n = 2
+# x = [ np.linspace(-1,1,num=100) for _ in range(0,n)]
+# grid = np.meshgrid(*x)
 
-# Tror denna behövs av koden precis nedan, osäker exakt hur man formulerar det
-pos = np.dstack(grid)
+# # Tror denna behövs av koden precis nedan, osäker exakt hur man formulerar det
+# pos = np.dstack(grid)
 
 
-# x,y = np.mgrid[-1:1:.01, -1:1:.01]
-# pos = np.dstack((x,y))
 
-# def f_wrapper(x,y):
-#     return f((x,y))
+x,y = np.mgrid[-1:1:.01, -1:1:.01]
+pos = np.dstack((x,y))
 
-# def f(pos):
+def f_wrapper(x,y):
+    return f((x,y))
+
+def f(pos):
     
-#     mus = [[0.5, 0], [-0.8, -0.4]]
-#     covs = [np.diag([0.2, 0.4]), np.diag([0.5, 0.1])]
+    # mus = [
+    #     [0.5, 0], 
+    #     [-0.8, -0.4],
+    #     [0, 1]
+    #     ]
+    # covs = [
+    #     np.diag([0.2, 0.4]),
+    #     np.diag([0.5, 0.1]),
+    #     np.diag([0.1, 0.1])
+    #     ]
     
-#     z2 = 0
+    mus = [
+        [2*np.random.rand() - 1, 2*np.random.rand() - 1], 
+        [2*np.random.rand() - 1, 2*np.random.rand() - 1],
+        [2*np.random.rand() - 1, 2*np.random.rand() - 1]
+        ]
     
-#     for vals in zip(mus, covs):
-#         rv =  multivariate_normal(vals[0], vals[1])
-#         z2 += rv.pdf(pos)
+    covs = [
+        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
+        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()]),
+        np.diag([0.1 + np.random.rand(), 0.1 + np.random.rand()])
+        ]
+    
+    
+    z2 = 0
+    
+    for vals in zip(mus, covs):
+        rv =  multivariate_normal(vals[0], vals[1])
+        z2 += rv.pdf(pos)
 
-#     return z2
+    return z2
 
 # from bayes_opt import BayesianOptimization
 # bounds = {'x': (-1,1), 'y':(-1,1)}
@@ -49,10 +71,15 @@ pos = np.dstack(grid)
 
 # print(opt.max)
 
-# z = f(pos)
+z = f(pos)
 
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+ax.plot_surface(x,y,z, vmin=z.min() * 2)
+
+
+# print(z)
 # fig = plt.figure()
 # ax = fig.add_subplot(111)
 # ax.contourf(x,y, z)
 
-# plt.show()
+plt.show()
