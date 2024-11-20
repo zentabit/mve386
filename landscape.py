@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal
 
-nin = 2 # N, dimension of invector x
+nin = 1 # N, dimension of invector x
 nout = 1 # M, dimension of outvector y
 nfunc = 5 # How many gaussians should be used
-peakedness = 10 # To make the gaussians more pointy
+peakedness = 100 # To make the gaussians more pointy
 d = 1 # Side length of the [0,d]^N cube
 
 def plot2d(mus, covs): # plots N = 2, M = 1 distributions on [0,d]^2 (implicity assuming M = 1)
@@ -15,6 +15,14 @@ def plot2d(mus, covs): # plots N = 2, M = 1 distributions on [0,d]^2 (implicity 
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     ax.plot_surface(x1,x2,y, vmin=y.min() * 2)
+
+    plt.show()
+
+def plot1d(mus, covs): # plots N = 2, M = 1 distributions on [0,d]^2 (implicity assuming M = 1)
+    x1 = np.arange(0,1,0.001)
+    y = f_sca(x1, mus, covs)
+
+    plt.plot(x1, y)
 
     plt.show()
 
@@ -59,6 +67,6 @@ mus = muss[..., 0]
 covs = covss[..., 0]
 # print(np.shape(muss[..., 0]))
 # print(f_sca((0.5, 0.5), mus, covs))
-print(f_vec((0.5, 0.5), muss, covss))
+# print(f_vec((0.5, 0.5), muss, covss))
 
-plot2d(mus, covs)
+plot1d(mus, covs)
