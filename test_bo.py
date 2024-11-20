@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 from scipy.stats.qmc import LatinHypercube
+import sampling_randUnif
 
-batch_sz = 2
+batch_sz = 5
 landscape.peakedness = 100
 mus, covs = landscape.gen_gauss(5, 1, 1) # fix an f throughout the run
 
@@ -80,9 +81,30 @@ def presample_lh(npoints, optimizer):
     for x in xs:
         optimizer.register(x, f(x))
 
+def presample_unif(npoints, optimizer):
+    xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
+
+    for x in xs:
+        optimizer.register(x, f(x))
+
 # acqf = acquisition.UpperConfidenceBound(kappa=1e4)
 acqf = CB(beta=0.2, kappa=1)
 pbounds = {'x': (0,1)}
+x = np.arange(0,1,0.001).reshape(-1,1)
+y = f(x)
+
+optimizer = BayesianOptimization(
+    f = f,
+    pbounds=pbounds,
+    acquisition_function=acqf,
+    verbose = 2,
+    random_state=0
+)
+
+presample_unif(15, optimizer)
+optimizer.maximize(init_points=0, n_iter=1)
+plot_gp(optimizer, x, y)
+
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
@@ -92,9 +114,6 @@ optimizer = BayesianOptimization(
 )
 
 presample_lh(batch_sz, optimizer)
-
-x = np.arange(0,1,0.001).reshape(-1,1)
-y = f(x)
 
 optimizer.maximize(init_points=0, n_iter=10)
 plot_gp(optimizer, x, y)
