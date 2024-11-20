@@ -16,15 +16,16 @@ def plotPoints(pointList):
     plt.scatter(x,y,marker="x")
     
     
-plt.ion() # Disable plot locking code execution
-plt.xlim(0,1)
-plt.ylim(0,1)
-plt.show()
+def main():
+    plt.ion() # Disable plot locking code execution
+    plt.xlim(0,1)
+    plt.ylim(0,1)
+    plt.show()
 
-while(True): # CTRL + C to break loop in terminanl
+    while(True): # CTRL + C to break loop in terminanl
 
-    plotPoints(randUnifSample(dim, batchSize))
+        plotPoints(randUnifSample(dim, batchSize))
 
 
 
-    input("[Enter] to generate new points")
+        input("[Enter] to generate new points")
