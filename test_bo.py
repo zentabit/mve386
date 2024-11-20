@@ -20,6 +20,18 @@ class CB(acquisition.AcquisitionFunction):
     def base_acq(self, mean, std):
         return self.beta * mean + self.kappa * std
 
+class GP_UCB(acquisition.AcquisitionFunction):
+    def __init__(self, random_state = None, delta = 0.1, a = 1, b = 0.2):
+        super().__init__(random_state)
+        self.delta = delta
+        self.b = b
+        self.a = a
+    
+    def base_acq(self, mean, std):
+        beta = 2 * np.log2( (self.i+1)**2 * 2 * np.pi**2 / (3 * self.delta) ) + 2 * landscape.nin * np.log2( (self.i + 1)**2 ** landscape.nin * self.b * landscape.d * np.sqrt(np.log2(4 * self.a * landscape.nin / self.delta )) )
+        # print(self.i)
+        return mean + np.sqrt(beta/5) * std
+
 def f(x):
     return landscape.f_sca(x, mus, covs)
 
@@ -88,7 +100,10 @@ def presample_unif(npoints, optimizer):
         optimizer.register(x, f(x))
 
 # acqf = acquisition.UpperConfidenceBound(kappa=1e4)
-acqf = CB(beta=0.2, kappa=1)
+# acqf = CB(beta=0.2, kappa=1)
+# acqf = GP_UCB()
+acqf = acquisition.ExpectedImprovement(xi = 1)
+
 pbounds = {'x': (0,1)}
 x = np.arange(0,1,0.001).reshape(-1,1)
 y = f(x)
@@ -101,7 +116,7 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
-presample_unif(15, optimizer)
+presample_unif(14, optimizer)
 optimizer.maximize(init_points=0, n_iter=1)
 plot_gp(optimizer, x, y)
 
@@ -113,8 +128,8 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
-presample_lh(batch_sz, optimizer)
+# presample_lh(batch_sz, optimizer)
 
-optimizer.maximize(init_points=0, n_iter=10)
+optimizer.maximize(init_points=0, n_iter=15)
 plot_gp(optimizer, x, y)
 plt.show()
