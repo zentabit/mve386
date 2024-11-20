@@ -18,7 +18,7 @@ def plot2d(mus, covs): # plots N = 2, M = 1 distributions on [0,d]^2 (implicity 
 
     plt.show()
 
-def plot1d(mus, covs): # plots N = 2, M = 1 distributions on [0,d]^2 (implicity assuming M = 1)
+def plot1d(mus, covs): # plots N = 1, M = 1 distributions on [0,d] (implicity assuming M = 1)
     x1 = np.arange(0,1,0.001)
     y = f_sca(x1, mus, covs)
 
