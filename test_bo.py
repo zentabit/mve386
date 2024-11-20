@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 from scipy.stats.qmc import LatinHypercube
+from scipy.stats import entropy
+from scipy.spatial.distance import jensenshannon
 import sampling_randUnif
 
 batch_sz = 5
@@ -70,7 +72,6 @@ def plot_gp(optimizer, x, y):
     axis.set_ylabel('f(x)', fontdict={'size':20})
     axis.set_xlabel('x', fontdict={'size':20})
 
-
     utility_function = optimizer.acquisition_function
     utility = -1 * utility_function._get_acq(gp=optimizer._gp)(x)
     x = x.flatten()
@@ -86,6 +87,8 @@ def plot_gp(optimizer, x, y):
     axis.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
     acq.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
 
+    return mu
+
 def presample_lh(npoints, optimizer):
     lh = LatinHypercube(landscape.nin)
     xs = lh.random(npoints)
@@ -99,10 +102,10 @@ def presample_unif(npoints, optimizer):
     for x in xs:
         optimizer.register(x, f(x))
 
-# acqf = acquisition.UpperConfidenceBound(kappa=1e4)
+# acqf = acquisition.UpperConfidenceBound(kappa=10)
 # acqf = CB(beta=0.2, kappa=1)
 # acqf = GP_UCB()
-acqf = acquisition.ExpectedImprovement(xi = 1)
+acqf = acquisition.ExpectedImprovement(xi = 5)
 
 pbounds = {'x': (0,1)}
 x = np.arange(0,1,0.001).reshape(-1,1)
@@ -112,24 +115,29 @@ optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
     acquisition_function=acqf,
-    verbose = 2,
+    verbose = 0,
     random_state=0
 )
 
 presample_unif(14, optimizer)
 optimizer.maximize(init_points=0, n_iter=1)
-plot_gp(optimizer, x, y)
+mu = plot_gp(optimizer, x, y)
+
+print(f"Entropy of unif search: {entropy(y, np.abs(mu))}")
 
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
     acquisition_function=acqf,
-    verbose = 2,
+    verbose = 0,
     random_state=0
 )
 
 # presample_lh(batch_sz, optimizer)
 
 optimizer.maximize(init_points=0, n_iter=15)
-plot_gp(optimizer, x, y)
-plt.show()
+mu = plot_gp(optimizer, x, y)
+
+# plt.show()
+
+print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
