@@ -4,6 +4,11 @@ import landscape
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
+from scipy.stats.qmc import LatinHypercube
+
+batch_sz = 2
+landscape.peakedness = 100
+mus, covs = landscape.gen_gauss(5, 1, 1) # fix an f throughout the run
 
 class CB(acquisition.AcquisitionFunction):
     def __init__(self, random_state = None, beta = 1, kappa = 1):
@@ -14,13 +19,8 @@ class CB(acquisition.AcquisitionFunction):
     def base_acq(self, mean, std):
         return self.beta * mean + self.kappa * std
 
-# acqf = acquisition.UpperConfidenceBound(kappa=1e4)
-acqf = CB(beta=0.1, kappa=1)
-
-mus, covs = landscape.gen_gauss(5, 1, 1)
 def f(x):
     return landscape.f_sca(x, mus, covs)
-
 
 def posterior(optimizer, grid):
     mu, sigma = optimizer._gp.predict(grid, return_std=True)
@@ -73,9 +73,16 @@ def plot_gp(optimizer, x, y):
     axis.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
     acq.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
 
+def presample_lh(npoints, optimizer):
+    lh = LatinHypercube(landscape.nin)
+    xs = lh.random(npoints)
 
+    for x in xs:
+        optimizer.register(x, f(x))
+
+# acqf = acquisition.UpperConfidenceBound(kappa=1e4)
+acqf = CB(beta=0.2, kappa=1)
 pbounds = {'x': (0,1)}
-
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
@@ -84,9 +91,11 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
+presample_lh(batch_sz, optimizer)
+
 x = np.arange(0,1,0.001).reshape(-1,1)
 y = f(x)
 
-optimizer.maximize(init_points=0, n_iter=8)
+optimizer.maximize(init_points=0, n_iter=10)
 plot_gp(optimizer, x, y)
 plt.show()

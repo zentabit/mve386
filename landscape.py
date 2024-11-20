@@ -31,7 +31,7 @@ def gen_gauss(nfunc, nin, d): # randomly select means and covariances for nfunc 
     covs = np.zeros((nfunc, nin, nin))
 
     for i in range(0, nfunc):
-        covs[i] = np.diag(0.01 + np.random.rand(nin)/peakedness)
+        covs[i] = np.diag(1e-6 + np.random.rand(nin)/peakedness)
 
     return mus, covs
 
