@@ -1,8 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-batchSize = 10
-dim = 2
+from sampler import Sampler
+
+class UniformSampler(Sampler):
+    
+    def __init__(self, dim:int):
+        self.dim = dim
+    
+    def sample(self, n):
+        return np.random.rand(n, self.dim)
+    
 
 def randUnifSample(dim, batchSize):
     return np.random.rand(batchSize,dim)
@@ -17,6 +25,10 @@ def plotPoints(pointList):
     
     
 def main():
+    batchSize = 10
+    dim = 2
+
+    
     plt.ion() # Disable plot locking code execution
     plt.xlim(0,1)
     plt.ylim(0,1)
