@@ -6,14 +6,14 @@ from matplotlib import gridspec
 import numpy as np
 from scipy.stats.qmc import LatinHypercube
 from scipy.stats import entropy
-from scipy.spatial.distance import jensenshannon
+# from scipy.spatial.distance import jensenshannon
 import sampling_randUnif
 
-batch_sz = 5
-landscape.peakedness = 100
+batch_sz = 3 # batch size in LHS
+landscape.peakedness = 100 # set the peakedness to get more extremes
 mus, covs = landscape.gen_gauss(5, 1, 1) # fix an f throughout the run
 
-class CB(acquisition.AcquisitionFunction):
+class CB(acquisition.AcquisitionFunction): # This is like UCB, but we can also set a parameter beta for mean
     def __init__(self, random_state = None, beta = 1, kappa = 1):
         super().__init__(random_state)
         self.beta = beta
@@ -22,7 +22,7 @@ class CB(acquisition.AcquisitionFunction):
     def base_acq(self, mean, std):
         return self.beta * mean + self.kappa * std
 
-class GP_UCB(acquisition.AcquisitionFunction):
+class GP_UCB(acquisition.AcquisitionFunction): # Using Thm 2
     def __init__(self, random_state = None, delta = 0.1, a = 1, b = 0.2):
         super().__init__(random_state)
         self.delta = delta
@@ -41,7 +41,7 @@ def posterior(optimizer, grid):
     mu, sigma = optimizer._gp.predict(grid, return_std=True)
     return mu, sigma
 
-def plot_gp(optimizer, x, y):
+def plot_gp(optimizer, x, y): # Given opt result and target function, plot result and next point to be acquired
     fig = plt.figure(figsize=(16, 10))
     steps = len(optimizer.space)
     fig.suptitle(
@@ -89,28 +89,31 @@ def plot_gp(optimizer, x, y):
 
     return mu
 
-def presample_lh(npoints, optimizer):
+def presample_lh(npoints, optimizer): # Crate a LHS and update the optimizer
     lh = LatinHypercube(landscape.nin)
     xs = lh.random(npoints)
 
     for x in xs:
         optimizer.register(x, f(x))
 
-def presample_unif(npoints, optimizer):
+def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
     xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
 
     for x in xs:
         optimizer.register(x, f(x))
 
-# acqf = acquisition.UpperConfidenceBound(kappa=10)
-# acqf = CB(beta=0.2, kappa=1)
+# Some acquisition functions
+# acqf = acquisition.UpperConfidenceBound(kappa=10) 
+acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB()
-acqf = acquisition.ExpectedImprovement(xi = 5)
+# acqf = acquisition.ExpectedImprovement(xi = 10)
 
+# Set opt bounds and create target
 pbounds = {'x': (0,1)}
 x = np.arange(0,1,0.001).reshape(-1,1)
 y = f(x)
 
+# This is just a dummy for unif sampling
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
@@ -119,12 +122,13 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
-presample_unif(14, optimizer)
-optimizer.maximize(init_points=0, n_iter=1)
+presample_unif(19, optimizer)
+optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp(optimizer, x, y)
 
 print(f"Entropy of unif search: {entropy(y, np.abs(mu))}")
 
+# This is the real run
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
@@ -133,11 +137,10 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
-# presample_lh(batch_sz, optimizer)
+presample_lh(batch_sz, optimizer)
+optimizer.maximize(init_points=0, n_iter=17)
 
-optimizer.maximize(init_points=0, n_iter=15)
 mu = plot_gp(optimizer, x, y)
-
-# plt.show()
+plt.show()
 
 print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
