@@ -6,8 +6,10 @@ from sampling_randMeshUnif import Uniform2DMeshSampler
 from sampling_randUnif import UniformSampler
 from sampling_lh import LHSampler
 
+from test_functions import *
 
-def findPeak(f, s : Sampler, batchSize, iterationLimit):
+
+def findPeak(f, s : Sampler, batchSize, iterationLimit, verbose=False):
     
    
     if not s.canSample():
@@ -40,7 +42,10 @@ def findPeak(f, s : Sampler, batchSize, iterationLimit):
         
         doLoop = (s.canSample() and (iwi < iterationLimit))
     
-    print("Maximum value {} found at {}".format(maxValue,maxPoint))
+    if verbose:
+        print("{}: Maximum value {} found at {} for {}".format(f.__name__,maxValue,maxPoint, type(s).__name__))
+    
+    return maxValue, maxPoint
     
     
     
@@ -55,11 +60,29 @@ def testF(p):
 
 def main():
     
-    r = Uniform2DMeshSampler(100)
-    r2 = UniformSampler(2)
-    r3 = LHSampler(2)
+    r = Uniform2DMeshSampler(1000) # 2D grid of 1000x1000 points
+    r2 = UniformSampler(2) # 2D grid
+    r3 = LHSampler(2) # 2D grid
     
-    findPeak(testF, r3, 10, 2)
+    batchSize = 10
+    ilwi = 10 # Iteration limit without improvement
+    
+    #findPeak(w_gauss2d, r, batchSize, ilwi, True)
+    #findPeak(w_gauss2d, r2, batchSize, ilwi, True)
+    #findPeak(w_gauss2d, r3, batchSize, ilwi, True)
+    
+    
+    iterations = 100
+    
+    avg = 0
+    for _ in range(0,iterations):
+        val, _ = findPeak(w_gauss2d, r3, batchSize, ilwi)
+        
+        avg += val    
+    
+    avg /= iterations
+    
+    print("Avg:{}".format(avg)) 
     
     
 if __name__ == '__main__':
