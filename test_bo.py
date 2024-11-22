@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 from scipy.stats.qmc import LatinHypercube
-from scipy.stats import entropy
+from scipy.stats import entropy, gamma
 # from scipy.spatial.distance import jensenshannon
 import sampling_randUnif
+import test_functions
 
 batch_sz = 3 # batch size in LHS
 landscape.peakedness = 100 # set the peakedness to get more extremes
@@ -22,7 +23,7 @@ class CB(acquisition.AcquisitionFunction): # This is like UCB, but we can also s
     def base_acq(self, mean, std):
         return self.beta * mean + self.kappa * std
 
-class GP_UCB(acquisition.AcquisitionFunction): # Using Thm 2
+class GP_UCB_2(acquisition.AcquisitionFunction): # Using Thm 2
     def __init__(self, random_state = None, delta = 0.1, a = 1, b = 0.2):
         super().__init__(random_state)
         self.delta = delta
@@ -31,10 +32,26 @@ class GP_UCB(acquisition.AcquisitionFunction): # Using Thm 2
     
     def base_acq(self, mean, std):
         beta = 2 * np.log2( (self.i+1)**2 * 2 * np.pi**2 / (3 * self.delta) ) + 2 * landscape.nin * np.log2( (self.i + 1)**2 ** landscape.nin * self.b * landscape.d * np.sqrt(np.log2(4 * self.a * landscape.nin / self.delta )) )
-        # print(self.i)
         return mean + np.sqrt(beta/5) * std
+    
+class RGP_UCB(acquisition.AcquisitionFunction):
+    def __init__(self, random_state = None, theta = 5.0):
+        super().__init__(random_state)
+        self.theta = theta
+        self.beta = 1.0
+    
+    def base_acq(self, mean, std):
+        return mean + np.sqrt(self.beta) * std
+    
+    def suggest(self, gp, target_space, n_random = 10000, n_l_bfgs_b = 10, fit_gp = True):
+        kappa = np.max([np.log(((self.i+1)**2 + 1)/np.sqrt(2 * np.pi)) / np.log(1 + self.theta/2), 1e-9])
+        # print(np.log(((self.i+1)**2 + 1)/np.sqrt(2 * np.pi)))
+        self.beta = gamma.rvs(kappa, self.theta)
+        # print(self.beta)
+        return super().suggest(gp, target_space, n_random, n_l_bfgs_b, fit_gp)
 
 def f(x):
+    # return test_functions.trough1d(x)
     return landscape.f_sca(x, mus, covs)
 
 def posterior(optimizer, grid):
@@ -104,8 +121,9 @@ def presample_unif(npoints, optimizer): # Sample uniformly and update the optimi
 
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
-acqf = CB(beta=0, kappa=1)
-# acqf = GP_UCB()
+# acqf = CB(beta=0, kappa=1)
+# acqf = GP_UCB_2()
+acqf = RGP_UCB(theta = 40)
 # acqf = acquisition.ExpectedImprovement(xi = 10)
 
 # Set opt bounds and create target
@@ -122,7 +140,7 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
-presample_unif(19, optimizer)
+presample_unif(12, optimizer)
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp(optimizer, x, y)
 
@@ -138,9 +156,11 @@ optimizer = BayesianOptimization(
 )
 
 presample_lh(batch_sz, optimizer)
-optimizer.maximize(init_points=0, n_iter=17)
+optimizer.maximize(init_points=0, n_iter=10)
 
 mu = plot_gp(optimizer, x, y)
+print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
+
 plt.show()
 
-print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
+
