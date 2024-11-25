@@ -12,7 +12,7 @@ from acquisitionfunctions import *
 
 batch_sz = 3 # batch size in LHS
 landscape.nin = 2
-landscape.peakedness = 100 # set the peakedness to get more extremes
+landscape.peakedness = 10 # set the peakedness to get more extremes
 mus, covs = landscape.gen_gauss(5, 2, 1) # fix an f throughout the run
 
 def f(x,y):
@@ -23,6 +23,43 @@ def posterior(optimizer, grid):
     mu, sigma = optimizer._gp.predict(grid, return_std=True)
     return mu, sigma
 
+
+def plot_gp_2d(optimizer, x, y, z):
+    fig, axs = plt.subplots(2, 2)
+    X, Y = np.meshgrid(x,y)
+    z_min, z_max = -abs(z).max(), abs(z).max()
+    
+    ax = axs[0,0]
+    c = ax.pcolor(X, Y, z)
+    # print(np.shape(z))
+    ax.set_title('Målfunktion')
+
+    x_obs = np.array([[res["params"]["x"]] for res in optimizer.res])
+    y_obs = np.array([[res["params"]["y"]] for res in optimizer.res])
+    z_obs = np.array([res["target"] for res in optimizer.res])
+    
+    out = np.transpose(np.vstack([X.ravel(), Y.ravel()]))
+    # print(out)
+    mu, sigma = posterior(optimizer, out)
+    print(mu)
+    mu = np.reshape(mu, np.shape(X))
+    sigma = np.reshape(sigma, np.shape(X))
+    
+    # print(np.shape(np.reshape(mu, np.shape(X))))
+    ax = axs[0,1]
+    c = ax.pcolor(X, Y, mu)
+    ax.scatter(x_obs, y_obs, marker = 'x', c='black')
+    ax.set_title('Posterior mean')
+
+    ax = axs[1,0]
+    c = ax.pcolor(X, Y, sigma)
+    ax.set_title('Covariance')
+
+    ax = axs[1,1]
+    c = ax.pcolor(X, Y, z - mu)
+    ax.set_title('Mål - mean')
+
+    return mu
 
 def presample_lh(npoints, optimizer): # Crate a LHS and update the optimizer
     lh = LatinHypercube(landscape.nin)
@@ -38,17 +75,18 @@ def presample_unif(npoints, optimizer): # Sample uniformly and update the optimi
         optimizer.register(x, f(x[0], x[1]))
 
 # Some acquisition functions
-# acqf = acquisition.UpperConfidenceBound(kappa=10) 
+acqf = acquisition.UpperConfidenceBound(kappa=2.56) 
 # acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
-acqf = RGP_UCB(theta = 3)
+# acqf = RGP_UCB(theta = 3)
 # acqf = acquisition.ExpectedImprovement(xi = 10)
 
 # Set opt bounds and create target
 pbounds = {'x': (0,1), 'y': (0,1)}
-x = np.arange(0,1,0.001).reshape(-1,1)
-y = np.arange(0,1,0.001).reshape(-1,1)
-z = f(x,y)
+x = np.arange(0,1,0.01).reshape(-1,1)
+y = np.arange(0,1,0.01).reshape(-1,1)
+X, Y = np.meshgrid(x,y)
+Z = f(X,Y)
 # landscape.plot2d(mus, covs)
 
 # This is just a dummy for unif sampling
@@ -60,10 +98,11 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
-presample_unif(12, optimizer)
+presample_unif(19, optimizer)
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
+mu = plot_gp_2d(optimizer, x, y, Z)
 
-# print(f"Entropy of unif search: {entropy(y, np.abs(mu))}")
+print(f"Entropy of unif search: {entropy(Z.flatten(), np.abs(mu).flatten())}")
 
 # This is the real run
 optimizer = BayesianOptimization(
@@ -75,11 +114,13 @@ optimizer = BayesianOptimization(
 )
 
 presample_lh(batch_sz, optimizer)
-optimizer.maximize(init_points=0, n_iter=10)
+optimizer.maximize(init_points=0, n_iter=20)
 
+# print(z)
+mu = plot_gp_2d(optimizer, x, y, Z)
 # mu = plot_gp(optimizer, x, y)
-# print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
+print(f"Entropy of regression: {entropy(Z.flatten(), np.abs(mu).flatten())}")
 
-# plt.show()
+plt.show()
 
 
