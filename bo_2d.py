@@ -91,7 +91,7 @@ x = np.arange(0,1,0.01).reshape(-1,1)
 y = np.arange(0,1,0.01).reshape(-1,1)
 X, Y = np.meshgrid(x,y)
 Z = f(X,Y)
-npts = 20
+npts = 50
 # landscape.plot2d(mus, covs)
 
 # This is just a dummy for unif sampling

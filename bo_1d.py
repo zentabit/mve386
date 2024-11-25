@@ -16,8 +16,8 @@ landscape.peakedness = 100 # set the peakedness to get more extremes
 mus, covs = landscape.gen_gauss(5, 1, 1) # fix an f throughout the run
 
 def f(x):
-    return test_functions.trough1d(x)
-    # return landscape.f_sca(x, mus, covs) - 10
+    # return test_functions.trough1d(x)
+    return landscape.f_sca(x, mus, covs)
 
 def posterior(optimizer, grid):
     mu, sigma = optimizer._gp.predict(grid, return_std=True)
@@ -86,9 +86,9 @@ def presample_unif(npoints, optimizer): # Sample uniformly and update the optimi
 
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
-# acqf = CB(beta=0, kappa=1)
+acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
-acqf = RGP_UCB(theta = 3)
+# acqf = RGP_UCB(theta = 3)
 # acqf = acquisition.ExpectedImprovement(xi = 10)
 
 # Set opt bounds and create target
@@ -105,7 +105,7 @@ optimizer = BayesianOptimization(
     random_state=0
 )
 
-presample_unif(12, optimizer)
+presample_unif(19, optimizer)
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp(optimizer, x, y)
 
@@ -121,7 +121,7 @@ optimizer = BayesianOptimization(
 )
 
 presample_lh(batch_sz, optimizer)
-optimizer.maximize(init_points=0, n_iter=10)
+optimizer.maximize(init_points=0, n_iter=20)
 
 mu = plot_gp(optimizer, x, y)
 print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
