@@ -9,6 +9,8 @@ from scipy.stats import entropy, gamma
 import sampling_randUnif
 import test_functions
 from acquisitionfunctions import *
+from sklearn.gaussian_process.kernels import Matern
+from sklearn.gaussian_process import GaussianProcessRegressor
 
 batch_sz = 3 # batch size in LHS
 landscape.nin = 2
@@ -50,6 +52,8 @@ def plot_gp_2d(optimizer, x, y, z):
     c = ax.pcolor(X, Y, mu)
     ax.scatter(x_obs, y_obs, marker = 'x', c='black')
     ax.set_title('Posterior mean')
+    ax.set_xlim([0, 1])
+    ax.set_ylim([0,1])
 
     ax = axs[1,0]
     c = ax.pcolor(X, Y, sigma)
@@ -66,20 +70,20 @@ def presample_lh(npoints, optimizer): # Crate a LHS and update the optimizer
     xs = lh.random(npoints)
 
     for x in xs:
-        optimizer.register(x, f(x[0], x[1]))
+        optimizer.probe(x)
 
 def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
     xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
 
     for x in xs:
-        optimizer.register(x, f(x[0], x[1]))
+        optimizer.probe(x)
 
 # Some acquisition functions
-acqf = acquisition.UpperConfidenceBound(kappa=2.56) 
+# acqf = acquisition.UpperConfidenceBound(kappa=10) 
 # acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
 # acqf = RGP_UCB(theta = 3)
-# acqf = acquisition.ExpectedImprovement(xi = 10)
+acqf = acquisition.ExpectedImprovement(xi = 6)
 
 # Set opt bounds and create target
 pbounds = {'x': (0,1), 'y': (0,1)}
@@ -87,6 +91,7 @@ x = np.arange(0,1,0.01).reshape(-1,1)
 y = np.arange(0,1,0.01).reshape(-1,1)
 X, Y = np.meshgrid(x,y)
 Z = f(X,Y)
+npts = 20
 # landscape.plot2d(mus, covs)
 
 # This is just a dummy for unif sampling
@@ -97,8 +102,15 @@ optimizer = BayesianOptimization(
     verbose = 0,
     random_state=0
 )
+optimizer._gp = GaussianProcessRegressor(
+    kernel=Matern(nu=1.5),
+    alpha=1e-6,
+    normalize_y=True,
+    n_restarts_optimizer=9,
+    random_state=optimizer._random_state,
+    )
 
-presample_unif(19, optimizer)
+presample_unif(npts - 1, optimizer)
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp_2d(optimizer, x, y, Z)
 
@@ -112,9 +124,16 @@ optimizer = BayesianOptimization(
     verbose = 0,
     random_state=0
 )
+optimizer._gp = GaussianProcessRegressor(
+    kernel=Matern(nu=1.5),
+    alpha=1e-6,
+    normalize_y=True,
+    n_restarts_optimizer=9,
+    random_state=optimizer._random_state,
+    )
 
 presample_lh(batch_sz, optimizer)
-optimizer.maximize(init_points=0, n_iter=20)
+optimizer.maximize(init_points=0, n_iter=npts)
 
 # print(z)
 mu = plot_gp_2d(optimizer, x, y, Z)
