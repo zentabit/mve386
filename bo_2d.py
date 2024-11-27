@@ -35,7 +35,6 @@ def plot_gp_2d(optimizer, x, y, z):
     
     ax = axs[0,0]
     c = ax.pcolor(X, Y, z, cmap = cmap, vmin = z_min, vmax = z_max)
-    # print(np.shape(z))
     ax.set_title('Målfunktion')
 
     x_obs = np.array([[res["params"]["x"]] for res in optimizer.res])
@@ -43,16 +42,13 @@ def plot_gp_2d(optimizer, x, y, z):
     z_obs = np.array([res["target"] for res in optimizer.res])
     
     out = np.transpose(np.vstack([X.ravel(), Y.ravel()]))
-    # print(out)
     mu, sigma = posterior(optimizer, out)
-    # print(mu)
     mu = np.reshape(mu, np.shape(X))
     sigma = np.reshape(sigma, np.shape(X))
     
-    # print(np.shape(np.reshape(mu, np.shape(X))))
     ax = axs[0,1]
     c = ax.pcolor(X, Y, mu, cmap = cmap, vmin = z_min, vmax = z_max)
-    ax.scatter(x_obs, y_obs, marker = 'x', c='white')
+    ax.scatter(x_obs, y_obs, marker = 'x', c='green')
     ax.set_title('Posterior mean')
     ax.set_xlim([0, 1])
     ax.set_ylim([0,1])
@@ -69,11 +65,9 @@ def plot_gp_2d(optimizer, x, y, z):
     cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
     fig.colorbar(c, cax=cbar_ax)
 
-    # fig.colorbar(ax)
-
     return mu
 
-def presample_lh(npoints, optimizer): # Crate a LHS and update the optimizer
+def presample_lh(npoints, optimizer): # Create a LHS and update the optimizer
     lh = LatinHypercube(landscape.nin)
     xs = lh.random(npoints)
 
@@ -86,8 +80,8 @@ def presample_unif(npoints, optimizer): # Sample uniformly and update the optimi
     for x in xs:
         optimizer.probe(x)
 
-def presample_unifrefine(refine, optimizer): # Sample uniformly and update the optimizer
-    xs = unifrefine(landscape.d, landscape.nin, refine)
+def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by refine
+    xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
 
     for i,j in np.ndindex(np.shape(xs)[-1], np.shape(xs)[-1]):
         optimizer.probe(xs[:, i, j])
@@ -105,7 +99,7 @@ x = np.arange(0,1,0.01).reshape(-1,1)
 y = np.arange(0,1,0.01).reshape(-1,1)
 X, Y = np.meshgrid(x,y)
 Z = f(X,Y)
-npts = 30
+npts = 10
 nu = 0.5
 # landscape.plot2d(mus, covs)
 
@@ -126,7 +120,8 @@ optimizer._gp = GaussianProcessRegressor(
     )
 
 # presample_unif(npts - 1, optimizer)
-presample_unifrefine(optimizer, 3)
+presample_unifrefine(2, optimizer)
+
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp_2d(optimizer, x, y, Z)
 h_unif = entropy(Z.flatten(), np.abs(mu).flatten())
@@ -151,9 +146,7 @@ optimizer._gp = GaussianProcessRegressor(
 presample_lh(batch_sz, optimizer)
 optimizer.maximize(init_points=0, n_iter=npts)
 
-# print(z)
 mu = plot_gp_2d(optimizer, x, y, Z)
-# mu = plot_gp(optimizer, x, y)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())
 print(f"Entropy of regression: {h_reg}")
 print(f"h_unif/h_reg = {h_unif/h_reg}")
