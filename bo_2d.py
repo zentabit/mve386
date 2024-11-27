@@ -11,6 +11,7 @@ import test_functions
 from acquisitionfunctions import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+from sampling_unifrefine import unifrefine
 
 batch_sz = 3 # batch size in LHS
 landscape.nin = 2
@@ -85,6 +86,12 @@ def presample_unif(npoints, optimizer): # Sample uniformly and update the optimi
     for x in xs:
         optimizer.probe(x)
 
+def presample_unifrefine(refine, optimizer): # Sample uniformly and update the optimizer
+    xs = unifrefine(landscape.d, landscape.nin, refine)
+
+    for i,j in np.ndindex(np.shape(xs)[-1], np.shape(xs)[-1]):
+        optimizer.probe(xs[:, i, j])
+
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
 # acqf = CB(beta=0, kappa=1)
@@ -118,7 +125,8 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
-presample_unif(npts - 1, optimizer)
+# presample_unif(npts - 1, optimizer)
+presample_unifrefine(optimizer, 3)
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp_2d(optimizer, x, y, Z)
 h_unif = entropy(Z.flatten(), np.abs(mu).flatten())
