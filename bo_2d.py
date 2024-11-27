@@ -58,7 +58,7 @@ def plot_gp_2d(optimizer, x, y, z):
     ax.set_title('Covariance')
 
     ax = axs[1,1]
-    c = ax.pcolor(X, Y, z - mu, cmap = cmap, vmin = z_min, vmax = z_max)
+    c = ax.pcolor(X, Y, np.abs(z - mu), cmap = cmap, vmin = z_min, vmax = z_max)
     ax.set_title('Mål - mean')
 
     fig.subplots_adjust(right=0.8)
