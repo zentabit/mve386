@@ -10,6 +10,8 @@ from scipy.stats import entropy, gamma
 import sampling_randUnif
 import test_functions
 from acquisitionfunctions import *
+from sklearn.gaussian_process.kernels import Matern
+from sklearn.gaussian_process import GaussianProcessRegressor
 
 batch_sz = 3 # batch size in LHS
 landscape.peakedness = 100 # set the peakedness to get more extremes
@@ -19,13 +21,14 @@ mus_neg, covs_neg = landscape.gen_gauss(1, 1, 1) # fix an f throughout the run f
 def f(x):
     # return test_functions.trough1d(x)
     f_positive = landscape.f_sca(x, mus, covs)
-    f_positive = np.divide(f_positive,np.max(f_positive)) + 1
+    # f_positive = np.divide(f_positive,np.max(f_positive)) + 1
 
     # A try to make positive hills and negative but results in entropy being inf
 
     f_negative = landscape.f_sca(x, mus_neg, covs_neg)
-    f_negative = np.divide(f_negative,np.max(f_negative))
+    # f_negative = np.divide(f_negative,np.max(f_negative))
     f_total = np.subtract(f_positive,f_negative)
+    f_total = f_positive
     # f_total = np.divide(f_total,np.max(f_total))
     return f_total
 
@@ -105,6 +108,7 @@ acqf = CB(beta=0, kappa=1)
 pbounds = {'x': (0,1)}
 x = np.arange(0,1,0.001).reshape(-1,1)
 y = f(x)
+nu = 1.5
 
 # This is just a dummy for unif sampling
 optimizer = BayesianOptimization(
@@ -114,6 +118,13 @@ optimizer = BayesianOptimization(
     verbose = 0,
     random_state=0
 )
+optimizer._gp = GaussianProcessRegressor(
+    kernel=Matern(nu=nu),
+    alpha=1e-6,
+    normalize_y=True,
+    n_restarts_optimizer=9,
+    random_state=optimizer._random_state,
+    )
 
 presample_unif(19, optimizer)
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
@@ -129,6 +140,13 @@ optimizer = BayesianOptimization(
     verbose = 0,
     random_state=0
 )
+optimizer._gp = GaussianProcessRegressor(
+    kernel=Matern(nu=nu),
+    alpha=1e-6,
+    normalize_y=True,
+    n_restarts_optimizer=9,
+    random_state=optimizer._random_state,
+    )
 
 presample_lh(batch_sz, optimizer)
 optimizer.maximize(init_points=0, n_iter=20)
