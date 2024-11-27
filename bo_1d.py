@@ -13,11 +13,21 @@ from acquisitionfunctions import *
 
 batch_sz = 3 # batch size in LHS
 landscape.peakedness = 100 # set the peakedness to get more extremes
-mus, covs = landscape.gen_gauss(5, 1, 1) # fix an f throughout the run
+mus, covs = landscape.gen_gauss(1, 1, 1) # fix an f throughout the run
+mus_neg, covs_neg = landscape.gen_gauss(1, 1, 1) # fix an f throughout the run for the negative hills
 
 def f(x):
     # return test_functions.trough1d(x)
-    return landscape.f_sca(x, mus, covs)
+    f_positive = landscape.f_sca(x, mus, covs)
+    f_positive = np.divide(f_positive,np.max(f_positive)) + 1
+
+    # A try to make positive hills and negative but results in entropy being inf
+
+    f_negative = landscape.f_sca(x, mus_neg, covs_neg)
+    f_negative = np.divide(f_negative,np.max(f_negative))
+    f_total = np.subtract(f_positive,f_negative)
+    # f_total = np.divide(f_total,np.max(f_total))
+    return f_total
 
 def posterior(optimizer, grid):
     mu, sigma = optimizer._gp.predict(grid, return_std=True)
