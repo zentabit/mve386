@@ -8,7 +8,7 @@ from scipy.stats.qmc import LatinHypercube
 from scipy.stats import entropy, gamma
 import sampling_randUnif
 import test_functions
-from acquisitionfunctions import *
+from bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sampling_unifrefine import unifrefine
@@ -67,24 +67,12 @@ def plot_gp_2d(optimizer, x, y, z):
 
     return mu
 
-def presample_lh(npoints, optimizer): # Create a LHS and update the optimizer
-    lh = LatinHypercube(landscape.nin)
-    xs = lh.random(npoints)
 
-    for x in xs:
-        optimizer.probe(x)
+# def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by refine
+#     xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
 
-def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
-    xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
-
-    for x in xs:
-        optimizer.probe(x)
-
-def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by refine
-    xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
-
-    for i,j in np.ndindex(np.shape(xs)[-1], np.shape(xs)[-1]):
-        optimizer.probe(xs[:, i, j])
+#     for i,j in np.ndindex(np.shape(xs)[-1], np.shape(xs)[-1]):
+#         optimizer.probe(xs[:, i, j])
 
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 

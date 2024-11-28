@@ -9,7 +9,7 @@ from scipy.stats import entropy, gamma
 # from scipy.spatial.distance import jensenshannon
 import sampling_randUnif
 import test_functions
-from acquisitionfunctions import *
+from bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 
@@ -84,18 +84,9 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
 
     return mu
 
-def presample_lh(npoints, optimizer): # Crate a LHS and update the optimizer
-    lh = LatinHypercube(landscape.nin)
-    xs = lh.random(npoints)
 
-    for x in xs:
-        optimizer.register(x, f(x))
 
-def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
-    xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
 
-    for x in xs:
-        optimizer.register(x, f(x))
 
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 

@@ -2,16 +2,16 @@ from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
 import landscape
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
+# from matplotlib import gridspec
 import numpy as np
-from scipy.stats.qmc import LatinHypercube
+# from scipy.stats.qmc import LatinHypercube
 from scipy.stats import entropy, gamma
-import sampling_randUnif
+# import sampling_randUnif
 import test_functions
-from acquisitionfunctions import *
+from bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sampling_unifrefine import unifrefine
+# from sampling_unifrefine import unifrefine
 
 batch_sz = 3 # batch size in LHS
 landscape.nin = 2
@@ -36,9 +36,6 @@ def f({args}):
     exec(func_def, globals())
 
 
-def posterior(optimizer, grid):
-    mu, sigma = optimizer._gp.predict(grid, return_std=True)
-    return mu, sigma
 
 
 def extract_mu(optimizer, x):
@@ -52,24 +49,20 @@ def extract_mu(optimizer, x):
 
     return mu
 
-def presample_lh(npoints, optimizer): # Create a LHS and update the optimizer
-    lh = LatinHypercube(landscape.nin)
-    xs = lh.random(npoints)
+# def presample_lh(npoints, optimizer): # Create a LHS and update the optimizer
+#     lh = LatinHypercube(landscape.nin)
+#     xs = lh.random(npoints)
 
-    for x in xs:
-        optimizer.probe(x)
+#     for x in xs:
+#         optimizer.probe(x)
 
-def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
-    xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
+# def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
+#     xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
 
-    for x in xs:
-        optimizer.probe(x)
+#     for x in xs:
+#         optimizer.probe(x)
 
-def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by refine
-    xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
 
-    for idx in np.ndindex(*(np.shape(xs)[1:])):
-        optimizer.probe(xs[(slice(None),) + idx])
 
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
