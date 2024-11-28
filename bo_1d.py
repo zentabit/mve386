@@ -4,10 +4,7 @@ import landscape
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
-from scipy.stats.qmc import LatinHypercube
 from scipy.stats import entropy, gamma
-# from scipy.spatial.distance import jensenshannon
-import sampling_randUnif
 import test_functions
 from bo_common import *
 from sklearn.gaussian_process.kernels import Matern

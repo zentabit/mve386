@@ -2,16 +2,12 @@ from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
 import landscape
 import matplotlib.pyplot as plt
-# from matplotlib import gridspec
 import numpy as np
-# from scipy.stats.qmc import LatinHypercube
 from scipy.stats import entropy, gamma
-# import sampling_randUnif
 import test_functions
 from bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-# from sampling_unifrefine import unifrefine
 
 batch_sz = 3 # batch size in LHS
 landscape.nin = 2
@@ -21,9 +17,6 @@ mus, covs = landscape.gen_gauss(5, landscape.nin, 1) # fix an f throughout the r
 def f_aux(X):
     # return test_functions.trough2d(x)
     return landscape.f_sca(np.moveaxis(X,0,landscape.nin), mus, covs)
-
-# def f(x,y,z):
-#     return landscape.f_sca((x,y,z), mus, covs)
 
 def create_function(arg_names):
     # Create a string defining the function with the required signature
@@ -35,9 +28,6 @@ def f({args}):
     # Execute this string in the global namespace
     exec(func_def, globals())
 
-
-
-
 def extract_mu(optimizer, x):
     xs = [x for _ in range(landscape.nin)]
     Xgrid = np.meshgrid(*xs)
@@ -48,21 +38,6 @@ def extract_mu(optimizer, x):
     # sigma = np.reshape(sigma, np.shape(X))
 
     return mu
-
-# def presample_lh(npoints, optimizer): # Create a LHS and update the optimizer
-#     lh = LatinHypercube(landscape.nin)
-#     xs = lh.random(npoints)
-
-#     for x in xs:
-#         optimizer.probe(x)
-
-# def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
-#     xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
-
-#     for x in xs:
-#         optimizer.probe(x)
-
-
 
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
@@ -78,13 +53,10 @@ pbounds = { var: (0,1) for var in var_names }
 create_function(var_names)
 x = np.arange(0,1,0.01).reshape(-1,1)
 X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
-# print(X)
-print(np.shape(X))
 Z = f_aux(X)
 npts = 49
 nu = 1.5
 alpha = 1e-3
-# landscape.plot2d(mus, covs)
 
 # This is just a dummy for unif sampling
 optimizer = BayesianOptimization(
@@ -128,7 +100,6 @@ optimizer._gp = GaussianProcessRegressor(
 
 presample_lh(batch_sz, optimizer)
 optimizer.maximize(init_points=0, n_iter=npts)
-# mu = plot_gp_2d(optimizer, x, x, Z)
 mu = extract_mu(optimizer, x)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())
 print(f"Entropy of regression: {h_reg}")
