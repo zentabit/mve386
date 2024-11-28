@@ -100,7 +100,8 @@ y = np.arange(0,1,0.01).reshape(-1,1)
 X, Y = np.meshgrid(x,y)
 Z = f(X,Y)
 npts = 10
-nu = 0.5
+nu = 1.5
+alpha = 1e-3
 # landscape.plot2d(mus, covs)
 
 # This is just a dummy for unif sampling
@@ -113,7 +114,7 @@ optimizer = BayesianOptimization(
 )
 optimizer._gp = GaussianProcessRegressor(
     kernel=Matern(nu=nu),
-    alpha=1e-6,
+    alpha=alpha,
     normalize_y=True,
     n_restarts_optimizer=9,
     random_state=optimizer._random_state,
@@ -137,7 +138,7 @@ optimizer = BayesianOptimization(
 )
 optimizer._gp = GaussianProcessRegressor(
     kernel=Matern(nu=nu),
-    alpha=1e-6,
+    alpha=alpha,
     normalize_y=True,
     n_restarts_optimizer=9,
     random_state=optimizer._random_state,
