@@ -14,6 +14,13 @@ class CB(acquisition.AcquisitionFunction): # This is like UCB, but we can also s
     
     def base_acq(self, mean, std):
         return self.beta * mean + self.kappa * std
+    
+class dummy_acqf(acquisition.AcquisitionFunction): # This is like UCB, but we can also set a parameter beta for mean
+    def __init__(self, random_state = None):
+        super().__init__(random_state)
+    
+    def base_acq(self, mean, std):
+        return np.zeros(np.shape(mean))
 
 class GP_UCB_2(acquisition.AcquisitionFunction): # Using Thm 2
     def __init__(self, random_state = None, delta = 0.1, a = 1, b = 0.2):

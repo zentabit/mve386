@@ -80,6 +80,7 @@ def plot_gp_2d(optimizer, x, y, z):
 # acqf = GP_UCB_2()
 # acqf = RGP_UCB(theta = 3)
 acqf = acquisition.ExpectedImprovement(xi = 6)
+acqd = dummy_acqf()
 
 # Set opt bounds and create target
 pbounds = {'x': (0,1), 'y': (0,1)}
@@ -87,7 +88,7 @@ x = np.arange(0,1,0.01).reshape(-1,1)
 y = np.arange(0,1,0.01).reshape(-1,1)
 X, Y = np.meshgrid(x,y)
 Z = f(X,Y)
-npts = 10
+npts = 49
 nu = 1.5
 alpha = 1e-3
 # landscape.plot2d(mus, covs)
@@ -96,7 +97,7 @@ alpha = 1e-3
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
-    acquisition_function=acqf,
+    acquisition_function=acqd,
     verbose = 0,
     random_state=0
 )
@@ -109,7 +110,7 @@ optimizer._gp = GaussianProcessRegressor(
     )
 
 # presample_unif(npts - 1, optimizer)
-presample_unifrefine(2, optimizer)
+presample_unifrefine(3, optimizer)
 
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp_2d(optimizer, x, y, Z)
@@ -132,8 +133,9 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
-presample_lh(batch_sz, optimizer)
-optimizer.maximize(init_points=0, n_iter=npts)
+# presample_lh(npts, optimizer)
+# presample_unif(npts, optimizer)
+optimizer.maximize(init_points=5, n_iter=npts - 5)
 
 mu = plot_gp_2d(optimizer, x, y, Z)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())

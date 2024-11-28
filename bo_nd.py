@@ -70,6 +70,7 @@ def extract_mu(optimizer, x):
 # acqf = GP_UCB_2()
 # acqf = RGP_UCB(theta = 3)
 acqf = acquisition.ExpectedImprovement(xi = 6)
+acqd = dummy_acqf()
 
 # Set opt bounds and create target
 var_names = [ f"x{i}" for i in range(0, landscape.nin) ]
@@ -89,7 +90,7 @@ alpha = 1e-3
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
-    acquisition_function=acqf,
+    acquisition_function=acqd,
     verbose = 0,
     random_state=0
 )

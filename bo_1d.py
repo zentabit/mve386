@@ -85,15 +85,13 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
     return mu
 
 
-
-
-
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
 acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
 # acqf = RGP_UCB(theta = 3)
 # acqf = acquisition.ExpectedImprovement(xi = 10)
+acqd = dummy_acqf()
 
 # Set opt bounds and create target
 pbounds = {'x': (0,1)}
@@ -105,7 +103,7 @@ nu = 1.5
 optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
-    acquisition_function=acqf,
+    acquisition_function=acqd,
     verbose = 0,
     random_state=0
 )
