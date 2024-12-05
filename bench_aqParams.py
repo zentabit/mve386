@@ -157,9 +157,6 @@ def benchmark(
             writer.writerow(arg)
             i+=1
     
-    
-    
-    return
 
 landscape.nin = 2
 landscape.peakedness = 10 # set the peakedness to get more extremes
