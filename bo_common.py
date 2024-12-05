@@ -49,6 +49,34 @@ class RGP_UCB(acquisition.AcquisitionFunction):
         # print(self.beta)
         return super().suggest(gp, target_space, n_random, n_l_bfgs_b, fit_gp)
     
+class thompson_sampling(acquisition.AcquisitionFunction):
+    def __init__(self, random_state=None):
+        super().__init__(random_state)
+    
+    def base_acq(self, y_mean, y_cov):
+        assert y_cov.shape[0] == y_cov.shape[1], "y_cov must be a square matrix."
+        return self.random_state.multivariate_normal(y_mean, y_cov)
+    
+    def _get_acq(self, gp, constraint=None):
+        if constraint is not None:
+            msg = (
+                f"Received constraints, but acquisition function {type(self)} "
+                + "does not support constrained optimization."
+            )
+            raise acquisition.ConstraintNotSupportedError(msg)
+
+        # overwrite the base method since we require cov not std
+        dim = gp.X_train_.shape[1]
+        def acq(x):
+            x = x.reshape(-1, dim)
+            mean, cov = gp.predict(x, return_cov=True)
+            return -1 * self.base_acq(mean, cov)
+        return acq
+    
+    def suggest(self, gp, target_space, n_random=1_000, n_l_bfgs_b=0, fit_gp: bool = True):
+        # reduce n_random and n_l_bfgs_b to reduce the computational load
+        return super().suggest(gp, target_space, n_random, n_l_bfgs_b, fit_gp)
+    
 def posterior(optimizer, grid):
     mu, sigma = optimizer._gp.predict(grid, return_std=True)
     return mu, sigma
