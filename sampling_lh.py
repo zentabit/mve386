@@ -7,7 +7,7 @@ from sampler import Sampler
 class LHSampler(Sampler):
     
     def __init__(self, dim:int):
-        self.lh = LatinHypercube(dim)
+        self.lh = LatinHypercube(dim, scramble=False)
     
     def sample(self, n):
         return self.lh.random(n)
