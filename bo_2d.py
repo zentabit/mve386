@@ -147,14 +147,12 @@ for i in range(batches):
     # acu = optimizer.acquisition_function
     optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
     acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
-    print(np.size(acu))
     total_sum = np.sum(acu)
     weights = [value / total_sum for value in acu]
     for j in range(batch_size):
         chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
         next_target[j,:] = np.unravel_index(chosen_index, (100,100))
         next_target[j,:] = next_target[j,:]/100
-        print(next_target[j,:])
         value[j] = f(*next_target[j,:])
     for k in range(batch_size):
         optimizer.register(params=next_target[k],target=value[k])

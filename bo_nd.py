@@ -8,9 +8,10 @@ import test_functions
 from bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+import random
 
 batch_sz = 3 # batch size in LHS
-landscape.nin = 2
+landscape.nin = 3
 landscape.peakedness = 10 # set the peakedness to get more extremes
 mus, covs = landscape.gen_gauss(5, landscape.nin, 1) # fix an f throughout the run
 
@@ -43,8 +44,8 @@ def extract_mu(optimizer, x):
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
 # acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
-# acqf = RGP_UCB(theta = 3)
-acqf = acquisition.ExpectedImprovement(xi = 6)
+acqf = RGP_UCB(theta = 3)
+# acqf = acquisition.ExpectedImprovement(xi = 6)
 acqd = dummy_acqf()
 
 # Set opt bounds and create target
@@ -54,7 +55,7 @@ create_function(var_names)
 x = np.arange(0,1,0.01).reshape(-1,1)
 X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
 Z = f_aux(X)
-npts = 49
+npts = 343
 nu = 1.5
 alpha = 1e-3
 
@@ -84,11 +85,12 @@ print(f"Entropy of unif search: {h_unif}")
 
 # This is the real run
 optimizer = BayesianOptimization(
-    f = f,
+    f = None,
     pbounds=pbounds,
     acquisition_function=acqf,
     verbose = 0,
-    random_state=0
+    random_state=0,
+    allow_duplicate_points=True
 )
 optimizer._gp = GaussianProcessRegressor(
     kernel=Matern(nu=nu),
@@ -98,8 +100,38 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
-presample_lh(batch_sz, optimizer)
-optimizer.maximize(init_points=0, n_iter=npts)
+# presample_lh(batch_sz, optimizer)
+# optimizer.maximize(init_points=0, n_iter=npts)
+
+batches = 14
+batch_size = 10
+
+next_target = np.empty((batch_size,landscape.nin),dtype=dict)
+value = np.zeros(batch_size)
+
+
+nt = optimizer.suggest()
+point = f(**nt)
+optimizer.register(nt,point)
+
+nt = optimizer.suggest()
+
+comb = np.dstack((X))
+
+for i in range(batches):
+    # acu = optimizer.acquisition_function
+    optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
+    acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
+    total_sum = np.sum(acu)
+    weights = [value / total_sum for value in acu]
+    for j in range(batch_size):
+        chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
+        next_target[j,:] = np.unravel_index(chosen_index, X.shape[1:])
+        next_target[j,:] = next_target[j,:]/np.max(X.shape)
+        value[j] = f(*next_target[j,:])
+    for k in range(batch_size):
+        optimizer.register(params=next_target[k],target=value[k])
+
 mu = extract_mu(optimizer, x)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())
 print(f"Entropy of regression: {h_reg}")
