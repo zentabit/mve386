@@ -8,6 +8,7 @@ import test_functions
 from bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+import random
 
 batch_sz = 3 # batch size in LHS
 landscape.nin = 2
@@ -67,8 +68,8 @@ def plot_gp_2d(optimizer, x, y, z):
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
 # acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
-# acqf = RGP_UCB(theta = 3)
-acqf = acquisition.ExpectedImprovement(xi = 6)
+acqf = RGP_UCB(theta = 3)
+# acqf = acquisition.ExpectedImprovement(xi = 6)
 acqd = dummy_acqf()
 
 # Set opt bounds and create target
@@ -112,7 +113,8 @@ optimizer = BayesianOptimization(
     pbounds=pbounds,
     acquisition_function=acqf,
     verbose = 0,
-    random_state=0
+    random_state=0,
+    allow_duplicate_points=True
 )
 optimizer._gp = GaussianProcessRegressor(
     kernel=Matern(nu=nu),
@@ -126,32 +128,46 @@ optimizer._gp = GaussianProcessRegressor(
 # presample_unif(npts, optimizer)
 # optimizer.maximize(init_points=5, n_iter=npts - 5)
 
-batches = 4
-batch_size = 12
-
-next_target = np.empty(batch_size,dtype=dict)
+batches = 8
+batch_size = 6
+dim = 2
+next_target = np.empty((batch_size,dim),dtype=dict)
 value = np.zeros(batch_size)
+
 
 nt = optimizer.suggest()
 point = f(**nt)
 optimizer.register(nt,point)
 
+nt = optimizer.suggest()
+
+comb = np.dstack((Y,X))
+
 for i in range(batches):
     # acu = optimizer.acquisition_function
     optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
-    acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(x)
+    acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
+    print(np.size(acu))
     total_sum = np.sum(acu)
     weights = [value / total_sum for value in acu]
     for j in range(batch_size):
-        next_target[j] = random.choices(range(len(acu)), weights=weights, k=1)[0]/1000
-        value[j] = f(next_target[j])
+        chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
+        next_target[j,:] = np.unravel_index(chosen_index, (100,100))
+        next_target[j,:] = next_target[j,:]/100
+        print(next_target[j,:])
+        value[j] = f(*next_target[j,:])
     for k in range(batch_size):
         optimizer.register(params=next_target[k],target=value[k])
+
+# optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
+# print(type(optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)))
 
 mu = plot_gp_2d(optimizer, x, y, Z)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())
 print(f"Entropy of regression: {h_reg}")
 print(f"h_unif/h_reg = {h_unif/h_reg}")
+
+
 
 plt.show()
 

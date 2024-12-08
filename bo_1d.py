@@ -89,7 +89,7 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
 # acqf = GP_UCB_2()
 acqf = RGP_UCB(theta = 10)
 # acqf = acquisition.ExpectedImprovement(xi = 10)
-acqf = thompson_sampling(random_state=13)
+# acqf = thompson_sampling(random_state=13)
 acqd = dummy_acqf()
 
 # Set opt bounds and create target
@@ -149,6 +149,7 @@ value = np.zeros(batch_size)
 nt = optimizer.suggest()
 point = f(**nt)
 optimizer.register(nt,point)
+
 for i in range(batches):
     # acu = optimizer.acquisition_function
     optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
@@ -161,7 +162,7 @@ for i in range(batches):
     for k in range(batch_size):
         optimizer.register(params=next_target[k],target=value[k])
     
-
+print(type(optimizer.acquisition_function._get_acq(gp = optimizer._gp)(0.4)))
 
 mu = plot_gp(optimizer, x, y)
 print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
