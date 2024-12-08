@@ -9,10 +9,11 @@ import test_functions
 from bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+import random
 
 batch_sz = 3 # batch size in LHS
 landscape.peakedness = 100 # set the peakedness to get more extremes
-mus, covs = landscape.gen_gauss(1, 1, 1) # fix an f throughout the run
+mus, covs = landscape.gen_gauss(3, 1, 1) # fix an f throughout the run
 mus_neg, covs_neg = landscape.gen_gauss(1, 1, 1) # fix an f throughout the run for the negative hills
 
 def f(x):
@@ -84,9 +85,9 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
 
 # Some acquisition functions
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
-acqf = CB(beta=0, kappa=1)
+# acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
-# acqf = RGP_UCB(theta = 3)
+acqf = RGP_UCB(theta = 10)
 # acqf = acquisition.ExpectedImprovement(xi = 10)
 acqd = dummy_acqf()
 
@@ -120,11 +121,12 @@ print(f"Entropy of unif search: {entropy(y, np.abs(mu))}")
 
 # This is the real run
 optimizer = BayesianOptimization(
-    f = f,
+    f = None,
     pbounds=pbounds,
     acquisition_function=acqf,
     verbose = 0,
-    random_state=0
+    random_state=0,
+    allow_duplicate_points=True
 )
 optimizer._gp = GaussianProcessRegressor(
     kernel=Matern(nu=nu),
@@ -134,8 +136,31 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
-presample_lh(batch_sz, optimizer)
-optimizer.maximize(init_points=0, n_iter=20)
+# presample_lh(batch_sz, optimizer)
+# optimizer.maximize(init_points=0, n_iter=100)
+
+batches = 4
+batch_size = 25
+
+next_target = np.empty(batch_size,dtype=dict)
+value = np.zeros(batch_size)
+
+nt = optimizer.suggest()
+point = f(**nt)
+optimizer.register(nt,point)
+for i in range(batches):
+    # acu = optimizer.acquisition_function
+    optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
+    acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(x)
+    total_sum = np.sum(acu)
+    weights = [value / total_sum for value in acu]
+    for j in range(batch_size):
+        next_target[j] = random.choices(range(len(acu)), weights=weights, k=1)[0]/1000
+        value[j] = f(next_target[j])
+    for k in range(batch_size):
+        optimizer.register(params=next_target[k],target=value[k])
+    
+
 
 mu = plot_gp(optimizer, x, y)
 print(f"Entropy of regression: {entropy(y, np.abs(mu))}")

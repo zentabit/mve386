@@ -108,7 +108,7 @@ print(f"Entropy of unif search: {h_unif}")
 
 # This is the real run
 optimizer = BayesianOptimization(
-    f = f,
+    f = None,
     pbounds=pbounds,
     acquisition_function=acqf,
     verbose = 0,
@@ -124,7 +124,29 @@ optimizer._gp = GaussianProcessRegressor(
 
 # presample_lh(npts, optimizer)
 # presample_unif(npts, optimizer)
-optimizer.maximize(init_points=5, n_iter=npts - 5)
+# optimizer.maximize(init_points=5, n_iter=npts - 5)
+
+batches = 4
+batch_size = 12
+
+next_target = np.empty(batch_size,dtype=dict)
+value = np.zeros(batch_size)
+
+nt = optimizer.suggest()
+point = f(**nt)
+optimizer.register(nt,point)
+
+for i in range(batches):
+    # acu = optimizer.acquisition_function
+    optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
+    acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(x)
+    total_sum = np.sum(acu)
+    weights = [value / total_sum for value in acu]
+    for j in range(batch_size):
+        next_target[j] = random.choices(range(len(acu)), weights=weights, k=1)[0]/1000
+        value[j] = f(next_target[j])
+    for k in range(batch_size):
+        optimizer.register(params=next_target[k],target=value[k])
 
 mu = plot_gp_2d(optimizer, x, y, Z)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())
