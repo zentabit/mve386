@@ -218,7 +218,7 @@ class Benchmark:
                 
                 for c in range(self.iteration_repeats):
                    
-                    # TODO: fixa ifall benchmarking
+                    # TODO: fixa ifall batches
                     self._benchmark(fd, aq, [a,b,c])
         
         
