@@ -65,7 +65,7 @@ def benchmark(
             random_state=optimizer._random_state,
         )
 
-        presample_lh(init_points, optimizer)
+        presample_lh(init_points, optimizer, fd.f)
         optimizer.maximize(init_points=0, n_iter=n_sample)
         mu = fd.extract_mu(optimizer)
         h_reg = entropy(fd.Z.flatten(), np.abs(mu).flatten())
@@ -236,6 +236,7 @@ def benchMultipleF(n):
             print(f"alpha: {alpha}")
             print(f"Format: {n}x{len(x)}x{iter_repeats} matrix")
             print(f"Format: #functions x #param. x #repeats")
+            print(f"Params: {x}")
             print(f"===")
     
     np.save(npy_fname, arr)
