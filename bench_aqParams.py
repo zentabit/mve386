@@ -65,7 +65,7 @@ def benchmark(
             random_state=optimizer._random_state,
         )
 
-        presample_lh(init_points, optimizer)
+        presample_lh(init_points, optimizer, fd.f)
         optimizer.maximize(init_points=0, n_iter=n_sample)
         mu = fd.extract_mu(optimizer)
         h_reg = entropy(fd.Z.flatten(), np.abs(mu).flatten())
@@ -110,19 +110,20 @@ def benchmark(
     # Nu när jag är klar inser jag att alla våra AQ endast har en parameter vi varierat...
     # Men om vi skulle vilja variera två eller fler så fungerar det nog
 
-    avg_entropy = []
+    avg_entropy = np.zeros((iter_repeat, len(arguments)))
 
-    for arg in arguments:
+    for j, arg in enumerate(arguments):
         
         h_avg = 0
         
         for i in range(iter_repeat):
-            h_avg += run(aq_base(**arg))    
+            h_avg += run(aq_base(**arg))
+            avg_entropy[i,j] = h_avg    
     
         h_avg /= iter_repeat
         
-        avg_entropy.append(h_avg)
-
+        
+        
         print(f"h_reg: {h_avg}, args: {arg}")
     
     
@@ -132,7 +133,7 @@ def benchmark(
 landscape.nin = 2
 landscape.peakedness = 10 # set the peakedness to get more extremes
 mus, covs = landscape.gen_gauss(5, landscape.nin, 1) # fix an f throughout the ru
-    
+
 def f_aux(X):
     # return test_functions.trough2d(x)
     return landscape.f_sca(np.moveaxis(X,0,landscape.nin), mus, covs)
@@ -147,10 +148,110 @@ def f({args}):
     # Execute this string in the global namespace
     exec(func_def, globals())   
 
-def main():
 
+def benchMultipleF(n):
     x = np.arange(0,1,0.01).reshape(-1,1)
     X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
+    var_names = [ f"x{i}" for i in range(0, landscape.nin) ]
+    pbounds = { var: (0,1) for var in var_names }
+    create_function(var_names)
+
+    landscape.peakedness = 10 # set the peakedness to get more extremes
+    
+    
+    ent = {} 
+    for i in range(n):
+        global mus, covs
+        mus, covs = landscape.gen_gauss(5, landscape.nin, 1) # fix an f throughout the ru
+         
+        Z = f_aux(X)
+
+        fd = FunctionDetails(x,X, f, Z)
+
+        
+        # Gaussian parameters
+        nu = 1.5
+        alpha = 1e-3
+
+        
+        aq_base = acquisition.ExpectedImprovement
+        aq_arg = {"xi":[5,7,2]}
+        
+        
+        iter_max = 30
+        iter_repeats = 2
+        
+        arguments, avg_entropy = benchmark(fd, aq_base, pbounds, iter_max,nu,alpha,aq_arg, iter_repeat=iter_repeats)
+
+        ent[i] = {"arguments": arguments, "entropy_list": avg_entropy}
+        
+    import json
+    from collections import defaultdict
+
+    
+    args = ent[0]["arguments"]
+    result_dict = defaultdict(dict)
+    x = []
+    for a in args:
+        x.append(str(sum(a.values())))
+
+    e_len = 0
+
+    for function_nr in ent.keys():
+        run_data = ent[function_nr]["entropy_list"]
+       
+        d = defaultdict(list)
+   
+        for i, entropy_list in enumerate(np.transpose(run_data)):
+            d[x[i]]= list(entropy_list)
+            
+            e_len = len(entropy_list)
+    
+    
+        result_dict[function_nr] = dict(d)
+        
+    
+    result_dict = dict(result_dict)
+    
+    arr = np.ndarray((len(result_dict.keys()), len(x), e_len))
+
+    for i, (fun_nr, params) in enumerate(result_dict.items()):
+        for j, (key, values) in enumerate(params.items()):
+            arr[i,j,:] = values
+    
+    
+    t = time.time()
+    npy_fname = f"aq_benchmark-{t}.npy"
+    log_fname = f"aq_benchmark-{t}.log"
+    
+    with open(log_fname, "w") as file:
+        with redirect_stdout(file):
+            print(f"===")
+            print(f"Time: {t} ")
+            print(f"Dimension: {landscape.nin}")
+            print(f"# Repeats: {iter_repeats}")
+            print(f"# Functions: {n}")
+            print(f"Aq: {aq_base.__name__}")
+            print(f"nu: {nu}")
+            print(f"alpha: {alpha}")
+            print(f"Format: {n}x{len(x)}x{iter_repeats} matrix")
+            print(f"Format: #functions x #param. x #repeats")
+            print(f"Params: {x}")
+            print(f"===")
+    
+    np.save(npy_fname, arr)
+    
+    
+
+def main():
+    benchMultipleF(2)
+    return
+    
+    x = np.arange(0,1,0.01).reshape(-1,1)
+    X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
+    var_names = [ f"x{i}" for i in range(0, landscape.nin) ]
+    pbounds = { var: (0,1) for var in var_names }
+    
     Z = f_aux(X)
     var_names = [ f"x{i}" for i in range(0, landscape.nin) ]
     pbounds = { var: (0,1) for var in var_names }
