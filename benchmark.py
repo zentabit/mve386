@@ -144,8 +144,6 @@ class Benchmark:
                     mu = fd.extract_mu(optimizer)
                     h_reg = entropy(fd.Z.flatten(), np.abs(mu).flatten())
 
-
-                    # TODO: kolla om logiken för indexering stämmer
                     temp = index + [c,0]
                     self.benchmark_array[*temp] = h_reg
                     
@@ -220,6 +218,7 @@ class Benchmark:
                 
                 for c in range(self.iteration_repeats):
                    
+                    # TODO: fixa ifall benchmarking
                     self._benchmark(fd, aq, [a,b,c])
         
         
