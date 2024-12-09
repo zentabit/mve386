@@ -81,21 +81,32 @@ def posterior(optimizer, grid):
     mu, sigma = optimizer._gp.predict(grid, return_std=True)
     return mu, sigma
     
-def presample_lh(npoints, optimizer): # Create a LHS and update the optimizer
+def presample_lh(npoints, optimizer, f): # Create a LHS and update the optimizer
     lh = LatinHypercube(landscape.nin)
     xs = lh.random(npoints)
 
     for x in xs:
-        optimizer.probe(x)
+        point = f(*x)
+        optimizer.register(x,point)
+        # optimizer.probe(x)
 
 def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
     xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)
-
+    
     for x in xs:
         optimizer.probe(x)
 
 def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by refine
     xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
-
+    
     for idx in np.ndindex(*(np.shape(xs)[1:])):
         optimizer.probe(xs[(slice(None),) + idx])
+
+def running_unifrefine(refine, optimizer, f): # Sample in a grid, specified by refine
+    xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
+
+    for idx in np.ndindex(*(np.shape(xs)[1:])):
+        point = f(*xs[(slice(None),) + idx])
+        
+        optimizer.register(xs[(slice(None),) + idx],point)
+        # optimizer.probe(xs[(slice(None),) + idx])        
