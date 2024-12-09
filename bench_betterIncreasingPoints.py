@@ -43,10 +43,12 @@ def benchmark(
     
     N = set([(i+1)*iter_step_size for i in range(math.floor(iter_max/iter_step_size))])
     
-    avg_entropy = [0 for _ in range(math.floor(iter_max/iter_step_size))]
+    #avg_entropy = [0 for _ in range(math.floor(iter_max/iter_step_size))]
+    
+    avg_entropy = np.zeros((len(N),iter_repeats))
     
     
-    for _ in range(iter_repeats):
+    for j in range(iter_repeats):
         c = 0
         optimizer = BayesianOptimization(
             f = fd.f,
@@ -77,7 +79,10 @@ def benchmark(
                 mu = fd.extract_mu(optimizer)
                 h_reg = entropy(fd.Z.flatten(), np.abs(mu).flatten())
                 print(f"{i}: Entropy of regression: {h_reg}")
-                avg_entropy[c] = h_reg/iter_repeats
+                #avg_entropy[c] = h_reg/iter_repeats
+                
+                avg_entropy[c,j] = h_reg
+                
                 c+= 1
            
     
@@ -120,12 +125,10 @@ def main():
     alpha = 1e-3
 
     iter_max = 100
-    iter_repeats = 1
+    iter_repeats = 2
     iter_step_size = 10
     
     avg_entropy = benchmark(fd, iter_max, acqf, pbounds, nu, alpha, iter_repeats=iter_repeats,init_points=3, iter_step_size=iter_step_size)
-    
-    
     
     aq_name = type(acqf).__name__
     
@@ -148,7 +151,7 @@ def main():
             print(f"===")
  
     with open(csv_fname, "w", newline='') as csvfile:
-        hnames = ["n_points", "avg_entropy"]
+        hnames = ["n_points"] + ["iter"+str(i) for i in range(iter_repeats)]
         writer = csv.DictWriter(csvfile, fieldnames=hnames)
         
         writer.writeheader()
@@ -158,7 +161,12 @@ def main():
         N.sort()
         
         for a,b in zip(N, avg_entropy):
-            writer.writerow({"n_points":a, "avg_entropy": b})
+            d = {"n_points":a}
+            
+            for i in range(iter_repeats):
+                d["iter"+str(i)] = b[i]
+            
+            writer.writerow(d)
     
     
 
