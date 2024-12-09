@@ -65,12 +65,13 @@ def benchmark(
             random_state=optimizer._random_state,
         )
 
-        presample_lh(init_points, optimizer)
+        presample_lh(init_points, optimizer, f)
         
         for i in range(iter_max+1):
             # optimizer.maximize()
             # {
             next_point = optimizer.suggest()
+            print(next_point)
             target = fd.f(**next_point)
             optimizer.register(params=next_point, target=target)
             # }
