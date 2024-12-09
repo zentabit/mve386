@@ -55,7 +55,7 @@ create_function(var_names)
 x = np.arange(0,1,0.01).reshape(-1,1)
 X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
 Z = f_aux(X)
-npts = 343
+npts = 100
 nu = 1.5
 alpha = 1e-3
 
@@ -76,7 +76,7 @@ optimizer._gp = GaussianProcessRegressor(
     )
 
 # presample_unif(npts - 1, optimizer)
-presample_unifrefine(3, optimizer)
+running_unifrefine(3, optimizer, f)
 
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = extract_mu(optimizer, x)
@@ -107,16 +107,18 @@ optimizer._gp = GaussianProcessRegressor(
 
 # Batching
 
-batches = 14
+batches = 9
 batch_size = 10
 
 next_target = np.empty((batch_size,landscape.nin),dtype=dict)
 value = np.zeros(batch_size)
 
 
-nt = optimizer.suggest()
-point = f(**nt) # TODO: This should be a hypercube
-optimizer.register(nt,point)
+# nt = optimizer.suggest()
+# point = f(**nt) # TODO: This should be a hypercube
+# optimizer.register(nt,point)
+
+presample_lh(10,optimizer,f)
 
 nt = optimizer.suggest()
 
@@ -128,10 +130,10 @@ for i in range(batches):
     total_sum = np.sum(acu)
     weights = [value / total_sum for value in acu]
     # Kan vara intressant att ändra vikterna under körningen för att ha mer exploraion eller explotation
-    # weights = [x**2 for x in weights]
+    # weights = [x**5 for x in weights]
     for j in range(batch_size):
         chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
-        next_target[j,:] = np.unravel_index(chosen_index, X.shape[1:])
+        next_target[j,:] = np.unravel_index(chosen_index, X.shape[1:], order='F')
         next_target[j,:] = next_target[j,:]/np.max(X.shape) # Kan behöva dubbelkolla att x1 = x1
         value[j] = f(*next_target[j,:])
     for k in range(batch_size):

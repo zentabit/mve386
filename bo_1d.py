@@ -114,7 +114,7 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
-presample_unif(19, optimizer)
+presample_unifrefine(19, optimizer)
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp(optimizer, x, y)
 
