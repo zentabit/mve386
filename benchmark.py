@@ -146,15 +146,25 @@ class Benchmark:
 
 
                     # TODO: kolla om logiken för indexering stämmer
-                    self.benchmark_array[index + [c]] = h_reg
+                    temp = index + [c,0]
+                    self.benchmark_array[*temp] = h_reg
                     
                     c+= 1
         else:
-            optimizer.maximize(init_points=0, n_iter=self.n_sample)
+            for i in range(self.n_sample+1):
+                # optimizer.maximize()
+                # {
+                next_point = optimizer.suggest()
+                target = fd.f(**next_point)
+                optimizer.register(params=next_point, target=target)
+                # }
 
             mu = fd.extract_mu(optimizer)
             h_reg = entropy(fd.Z.flatten(), np.abs(mu).flatten())
-            self.benchmark_array[index + [0]] = h_reg
+            
+            temp = index + [0,0]
+
+            self.benchmark_array[*temp] = h_reg
         
         
     
@@ -166,53 +176,63 @@ class Benchmark:
         # return test_functions.trough2d(x)
         return landscape.f_sca(np.moveaxis(X,0,landscape.nin), self.mus, self.covs)
 
-    # TODO: se över hur denna ska fungera inom klassen
     def _create_function(self, arg_names):
         # Create a string defining the function with the required signature
         args = ", ".join(arg_names)
-        func_def = f"""
-    def f({args}):
-        return landscape.f_sca(({args}), mus, covs)
-    """
+        
+        global mus, covs
+        mus,covs = self.mus, self.covs
+        
+        func_def = f"""def f({args}):return landscape.f_sca(({args}), mus, covs)"""
         # Execute this string in the global namespace
         exec(func_def, globals())   
              
     
-    def run(self):
-        raise Exception("Fungerar ej ännu!")
-        
+    def run(self):        
         x = np.arange(0,1,0.01).reshape(-1,1)
         X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
         var_names = [ f"x{i}" for i in range(0, landscape.nin) ]
         self.pbounds = { var: (0,1) for var in var_names }
-        self._create_function(var_names)
-
+        
         landscape.peakedness = 10 # set the peakedness to get more extremes
         
         arguments = self._computeAqParams()
         
+        
+        # #funktioner, #argument, #iterationer, #steg, #batchnr
+        n_steps =  math.floor(self.n_sample/self.n_sample_step_size) if self.n_sample_step_size is not None else 1
+        n_batches = math.floor(self.n_sample/self.batch_size) if self.batch_size else 1
+        
+        self.benchmark_array = np.zeros((self.function_number, len(arguments), self.iteration_repeats, n_steps, n_batches))
+        
+        
         for a in range(self.function_number):
             self.mus, self.covs = landscape.gen_gauss(5, landscape.nin, 1) # fix an f throughout the ru
+            self._create_function(var_names)
             Z = self._f_aux(X)
 
             fd = FunctionDetails(x,X, f, Z)
             
-            
+            # TODO: köra utan parameterloop
             for b, arg in enumerate(arguments):
                 
-                aq = self.aq(arg)
+                aq = self.aq(**arg)
                 
                 for c in range(self.iteration_repeats):
-                    
+                   
                     self._benchmark(fd, aq, [a,b,c])
         
         
-        # Loop för funktioner
-        
-        # Loop för aq argument
-        # Loop för iterationer
-     
-
+    def _funcInfo(self):
+        return f"""
+        Dimension: {landscape.nin}
+        # Repeats: {self.iteration_repeats}
+        # Functions: {self.function_number}
+        nu: {self.nu}
+        alpha: {self.alpha}
+        Format: {np.shape(self.benchmark_array)} matrix
+        """
+    
     def save(self, fname=""):
         
         if not fname:
@@ -229,9 +249,15 @@ class Benchmark:
                 #print(f"Aq: {aq_base.__name__}")
                 print(f"nu: {self.nu}")
                 print(f"alpha: {self.alpha}")
-                #print(f"Format: {n}x{len(x)}x{iter_repeats} matrix")
+                print(f"Format: {np.shape(self.benchmark_array)} matrix")
                 #print(f"Format: #functions x #param. x #repeats")
                 #print(f"Params: {x}")
                 print(f"===")
     
         np.save(fname, self.benchmark_array)
+    
+    def _print(self):
+        print(self.benchmark_array)
+    
+    def __str__(self):
+        return self._funcInfo()
