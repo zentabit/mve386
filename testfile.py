@@ -20,6 +20,9 @@ alpha = 1e-3
 aq_base = acquisition.ExpectedImprovement
 aq_arg = {"xi":[5,7,2]}
 
+# Vill ni köra utan att benchmarka över aq-parametrar använd e
+# aq_arg = {"xi":[P,P,1]}
+# där P är värdet på parametern ni vill köra
 
 iter_max = 30
 iter_repeats = 2
@@ -39,3 +42,7 @@ b = benchmark.Benchmark(
 b.run()
 
 b.save()
+
+b._print()
+
+print(b)
