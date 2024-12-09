@@ -153,6 +153,10 @@ def main():
         
         writer.writeheader()
         
+        N = list(N)
+        
+        N.sort()
+        
         for a,b in zip(N, avg_entropy):
             writer.writerow({"n_points":a, "avg_entropy": b})
     
