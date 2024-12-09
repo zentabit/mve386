@@ -126,36 +126,7 @@ def benchmark(
         print(f"h_reg: {h_avg}, args: {arg}")
     
     
-    t = time.time()
-    csv_fname = f"aq_benchmark-{t}.csv"
-    log_fname = f"aq_benchmark-{t}.log"
-    
-    with open(log_fname, "w") as file:
-        with redirect_stdout(file):
-            print(f"===")
-            print(f"Time: {t} ")
-            print(f"Dimension: {landscape.nin}")
-            print(f"# Repeats: {iter_repeat}")
-            print(f"Aq: {aq_base.__name__}")
-            print(f"nu: {nu}")
-            print(f"alpha: {alpha}")
-            print(f"===")
-    
-    
-    with open(csv_fname, "w", newline='') as csvfile:
-        
-        hnames = list(arguments[0].keys()) + ["value"]
-        writer = csv.DictWriter(csvfile, fieldnames=hnames)
-        
-        writer.writeheader()
-        
-        i=0
-        for arg in arguments:
-            
-            arg["value"] = avg_entropy[i]
-           
-            writer.writerow(arg)
-            i+=1
+    return arguments, avg_entropy
     
 
 landscape.nin = 2
@@ -196,10 +167,40 @@ def main():
     aq_arg = {"xi":[5,7,2]}
     
     
-    nSamples = 30
-    n_avg = 1
+    iter_max = 30
+    iter_repeats = 1
     
-    benchmark(fd, aq_base, pbounds, nSamples,nu,alpha,aq_arg, iter_repeat=n_avg)
+    arguments, avg_entropy = benchmark(fd, aq_base, pbounds, iter_max,nu,alpha,aq_arg, iter_repeat=iter_repeats)
+    
+    
+    
+    t = time.time()
+    csv_fname = f"aq_benchmark-{t}.csv"
+    log_fname = f"aq_benchmark-{t}.log"
+    
+    with open(log_fname, "w") as file:
+        with redirect_stdout(file):
+            print(f"===")
+            print(f"Time: {t} ")
+            print(f"Dimension: {landscape.nin}")
+            print(f"# Repeats: {iter_repeats}")
+            print(f"Aq: {aq_base.__name__}")
+            print(f"nu: {nu}")
+            print(f"alpha: {alpha}")
+            print(f"===")
+    
+    
+    with open(csv_fname, "w", newline='') as csvfile:
+        hnames = list(arguments[0].keys()) + ["value"]
+        writer = csv.DictWriter(csvfile, fieldnames=hnames) 
+        writer.writeheader() 
+        
+        i=0
+        for arg in arguments:
+            arg["value"] = avg_entropy[i]
+            writer.writerow(arg)
+            i+=1
+    
 
 if __name__ == '__main__':
     main()
