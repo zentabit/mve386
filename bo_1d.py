@@ -137,11 +137,15 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
+# One sample at a time
+
 # presample_lh(batch_sz, optimizer)
 # optimizer.maximize(init_points=0, n_iter=100)
 
+# Batching
+
 batches = 4
-batch_size = 25
+batch_size = 10
 
 next_target = np.empty(batch_size,dtype=dict)
 value = np.zeros(batch_size)
@@ -151,18 +155,17 @@ point = f(**nt)
 optimizer.register(nt,point)
 
 for i in range(batches):
-    # acu = optimizer.acquisition_function
     optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
     acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(x)
     total_sum = np.sum(acu)
     weights = [value / total_sum for value in acu]
+    # Kan vara intressant att ändra vikterna under körningen för att ha mer exploraion eller explotation
+    # weights = [x**2 for x in weights]
     for j in range(batch_size):
         next_target[j] = random.choices(range(len(acu)), weights=weights, k=1)[0]/1000
         value[j] = f(next_target[j])
     for k in range(batch_size):
         optimizer.register(params=next_target[k],target=value[k])
-    
-print(type(optimizer.acquisition_function._get_acq(gp = optimizer._gp)(0.4)))
 
 mu = plot_gp(optimizer, x, y)
 print(f"Entropy of regression: {entropy(y, np.abs(mu))}")

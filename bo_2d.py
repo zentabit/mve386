@@ -124,9 +124,13 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
+# One sample at a time
+
 # presample_lh(npts, optimizer)
 # presample_unif(npts, optimizer)
 # optimizer.maximize(init_points=5, n_iter=npts - 5)
+
+# Batching
 
 batches = 8
 batch_size = 6
@@ -144,11 +148,12 @@ nt = optimizer.suggest()
 comb = np.dstack((Y,X))
 
 for i in range(batches):
-    # acu = optimizer.acquisition_function
     optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
     acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
     total_sum = np.sum(acu)
     weights = [value / total_sum for value in acu]
+    # Kan vara intressant att ändra vikterna under körningen för att ha mer exploraion eller explotation
+    # weights = [x**2 for x in weights]
     for j in range(batch_size):
         chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
         next_target[j,:] = np.unravel_index(chosen_index, (100,100))
@@ -156,9 +161,6 @@ for i in range(batches):
         value[j] = f(*next_target[j,:])
     for k in range(batch_size):
         optimizer.register(params=next_target[k],target=value[k])
-
-# optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
-# print(type(optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)))
 
 mu = plot_gp_2d(optimizer, x, y, Z)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())

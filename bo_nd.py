@@ -100,8 +100,12 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
+# One sample at a time
+
 # presample_lh(batch_sz, optimizer)
 # optimizer.maximize(init_points=0, n_iter=npts)
+
+# Batching
 
 batches = 14
 batch_size = 10
@@ -111,7 +115,7 @@ value = np.zeros(batch_size)
 
 
 nt = optimizer.suggest()
-point = f(**nt)
+point = f(**nt) # TODO: This should be a hypercube
 optimizer.register(nt,point)
 
 nt = optimizer.suggest()
@@ -119,15 +123,16 @@ nt = optimizer.suggest()
 comb = np.dstack((X))
 
 for i in range(batches):
-    # acu = optimizer.acquisition_function
     optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
     acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
     total_sum = np.sum(acu)
     weights = [value / total_sum for value in acu]
+    # Kan vara intressant att ändra vikterna under körningen för att ha mer exploraion eller explotation
+    # weights = [x**2 for x in weights]
     for j in range(batch_size):
         chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
         next_target[j,:] = np.unravel_index(chosen_index, X.shape[1:])
-        next_target[j,:] = next_target[j,:]/np.max(X.shape)
+        next_target[j,:] = next_target[j,:]/np.max(X.shape) # Kan behöva dubbelkolla att x1 = x1
         value[j] = f(*next_target[j,:])
     for k in range(batch_size):
         optimizer.register(params=next_target[k],target=value[k])
