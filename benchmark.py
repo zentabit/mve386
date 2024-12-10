@@ -8,7 +8,7 @@ from bo_common import *
 from scipy.stats import entropy
 import landscape
 from contextlib import redirect_stdout
-
+import random 
 import csv
 import time
 
@@ -18,7 +18,11 @@ class FunctionDetails:
         self.mesh_array = X
         self.f = exact_f
         self.Z = exact_Z
-        
+    
+    def calcEntropy(self, optimizer : BayesianOptimization):
+        mu = self.extract_mu(optimizer)
+        return entropy(self.Z.flatten(), np.abs(mu).flatten())
+    
     def extract_mu(self, optimizer : BayesianOptimization):
         xs = [self.x for _ in range(landscape.nin)]
         Xgrid = np.meshgrid(*xs)
@@ -148,6 +152,34 @@ class Benchmark:
                     self.benchmark_array[*temp] = h_reg
                     
                     c+= 1
+        elif self.batch_size:
+            n_batches = math.ceil(self.n_sample / self.batch_size)
+            
+            next_target = np.empty((self.batch_size, landscape.nin), dtype=dict)
+            values = np.zeros(self.batch_size)
+            
+            # Behövs tydligen annars fungerar ej
+            optimizer.suggest()
+            
+            comb = np.dstack(fd.mesh_array)
+            
+            for i in range(n_batches):
+                optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
+                acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
+                total_sum = np.sum(acu)
+                weights = [value / total_sum for value in acu]
+                
+                for j in range(self.batch_size):
+                    chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
+                    next_target[j,:] = np.unravel_index(chosen_index, fd.mesh_array.shape[1:], order='F')
+                    next_target[j,:] = next_target[j,:]/np.max(fd.mesh_array.shape) # Kan behöva dubbelkolla att x1 = x1
+                    values[j] = fd.f(*next_target[j,:])
+                    optimizer.register(params=next_target[j],target=values[j])
+
+                h_reg = fd.calcEntropy(optimizer)
+                
+                temp = index + [0, i]
+                self.benchmark_array[*temp] = h_reg
         else:
             for i in range(self.n_sample+1):
                 # optimizer.maximize()
@@ -157,18 +189,13 @@ class Benchmark:
                 optimizer.register(params=next_point, target=target)
                 # }
 
-            mu = fd.extract_mu(optimizer)
-            h_reg = entropy(fd.Z.flatten(), np.abs(mu).flatten())
+            h_reg = fd.calcEntropy(optimizer)
             
             temp = index + [0,0]
 
             self.benchmark_array[*temp] = h_reg
         
         
-    
-    def _batchBenchmark(self):
-        pass
-    
     
     def _f_aux(self, X):
         # return test_functions.trough2d(x)
@@ -199,7 +226,7 @@ class Benchmark:
         
         # #funktioner, #argument, #iterationer, #steg, #batchnr
         n_steps =  math.floor(self.n_sample/self.n_sample_step_size) if self.n_sample_step_size is not None else 1
-        n_batches = math.floor(self.n_sample/self.batch_size) if self.batch_size else 1
+        n_batches = math.ceil(self.n_sample/self.batch_size) if self.batch_size else 1
         
         self.benchmark_array = np.zeros((self.function_number, len(arguments), self.iteration_repeats, n_steps, n_batches))
         
@@ -211,14 +238,12 @@ class Benchmark:
 
             fd = FunctionDetails(x,X, f, Z)
             
-            # TODO: köra utan parameterloop
             for b, arg in enumerate(arguments):
                 
                 aq = self.aq(**arg)
                 
                 for c in range(self.iteration_repeats):
                    
-                    # TODO: fixa ifall batches
                     self._benchmark(fd, aq, [a,b,c])
         
         
