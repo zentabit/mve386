@@ -282,7 +282,7 @@ class Benchmark:
         
         
     def _funcInfo(self):
-        if not self.benchmark_array:
+        if self.benchmark_array is None:
             self._setup()
         
         return f"""
@@ -307,7 +307,7 @@ class Benchmark:
     
     def save(self, fname=""):
         
-        if not self.benchmark_array:
+        if self.benchmark_array is None:
             raise Exception("Cannot save before doing a run!")
         
         if not fname:
