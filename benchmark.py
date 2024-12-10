@@ -37,6 +37,7 @@ class FunctionDetails:
 class Benchmark:
     
     def __init__(self,
+                dim,
                 nu,
                 alpha,
                 aq_base : acquisition.AcquisitionFunction,
@@ -49,6 +50,9 @@ class Benchmark:
                 batch_size = 0,
                 verbose = 0
                 ):
+        
+        landscape.nin = dim
+        
         self.nu = nu
         self.alpha = alpha
         self.aq = aq_base 
@@ -121,7 +125,8 @@ class Benchmark:
             pbounds=self.pbounds,
             acquisition_function=aq,
             verbose = 0,
-            random_state=0
+            random_state=0,
+            allow_duplicate_points=True
         )
         optimizer._gp = GaussianProcessRegressor(
             kernel=Matern(nu=self.nu),
@@ -180,7 +185,10 @@ class Benchmark:
                     next_target[j,:] = np.unravel_index(chosen_index, fd.mesh_array.shape[1:], order='F')
                     next_target[j,:] = next_target[j,:]/np.max(fd.mesh_array.shape) # Kan behöva dubbelkolla att x1 = x1
                     values[j] = fd.f(*next_target[j,:])
-                    optimizer.register(params=next_target[j],target=values[j])
+                
+                for k in range(self.batch_size):
+                    optimizer.register(params=next_target[k],target=values[k])
+
 
                 h_reg = fd.calcEntropy(optimizer)
                 
