@@ -317,7 +317,7 @@ verbose: {self.verbose}
         
         if not fname:
             t = time.time()
-            fname="benchmark-{t}"
+            fname=f"benchmark-{t}"
         
         with open(fname+".log", "w") as file:
             with redirect_stdout(file):
