@@ -46,8 +46,8 @@ class Benchmark:
                 n_sample_step_size:int = None,
                 iteration_repeats:int = 1,
                 function_number = 1,
-                batches = 0,
-                batch_size = 0
+                batch_size = 0,
+                verbose = 0
                 ):
         self.nu = nu
         self.alpha = alpha
@@ -60,10 +60,10 @@ class Benchmark:
         self.iteration_repeats = iteration_repeats
         self.function_number = function_number
         
-        self.batches = batches
         self.batch_size = batch_size
         
-        self.benchmark_array = np.ndarray((1))
+        self.benchmark_array = None
+        self.verbose = verbose
 
     def _computeIterationBreakpoints(self):
         return set([(i+1)*self.n_sample_step_size for i in range(math.floor(self.n_sample/self.n_sample_step_size))])
@@ -137,6 +137,9 @@ class Benchmark:
             N = self._computeIterationBreakpoints()
             c = 0
             for i in range(self.n_sample+1):
+                if self.verbose:
+                    print(f"Step {i+1} / {self.n_sample}")
+                
                 # optimizer.maximize()
                 # {
                 next_point = optimizer.suggest()
@@ -164,6 +167,9 @@ class Benchmark:
             comb = np.dstack(fd.mesh_array)
             
             for i in range(n_batches):
+                if self.verbose:
+                    print(f"Batch {i+1} / {n_batches}")
+                    
                 optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
                 acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
                 total_sum = np.sum(acu)
@@ -182,6 +188,9 @@ class Benchmark:
                 self.benchmark_array[*temp] = h_reg
         else:
             for i in range(self.n_sample+1):
+                if self.verbose:
+                    print(f"Sample {i+1} / {self.n_sample}")
+                    
                 # optimizer.maximize()
                 # {
                 next_point = optimizer.suggest()
@@ -211,9 +220,21 @@ class Benchmark:
         func_def = f"""def f({args}):return landscape.f_sca(({args}), mus, covs)"""
         # Execute this string in the global namespace
         exec(func_def, globals())   
-             
+    
+    def _setup(self):
+        self.arguments = self._computeAqParams()
+        # #funktioner, #argument, #iterationer, #steg, #batchnr
+        n_steps =  math.floor(self.n_sample/self.n_sample_step_size) if self.n_sample_step_size is not None else 1
+        n_batches = math.ceil(self.n_sample/self.batch_size) if self.batch_size else 1
+        
+        self.benchmark_array = np.zeros((self.function_number, len(self.arguments), self.iteration_repeats, n_steps, n_batches))
+        
+        
     
     def run(self):        
+        
+        self._setup()
+        
         x = np.arange(0,1,0.01).reshape(-1,1)
         X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
         var_names = [ f"x{i}" for i in range(0, landscape.nin) ]
@@ -221,43 +242,58 @@ class Benchmark:
         
         landscape.peakedness = 10 # set the peakedness to get more extremes
         
-        arguments = self._computeAqParams()
-        
-        
-        # #funktioner, #argument, #iterationer, #steg, #batchnr
-        n_steps =  math.floor(self.n_sample/self.n_sample_step_size) if self.n_sample_step_size is not None else 1
-        n_batches = math.ceil(self.n_sample/self.batch_size) if self.batch_size else 1
-        
-        self.benchmark_array = np.zeros((self.function_number, len(arguments), self.iteration_repeats, n_steps, n_batches))
-        
         
         for a in range(self.function_number):
+            if self.verbose:
+                    print(f"Function number: {a} / {self.function_number}")
+            
             self.mus, self.covs = landscape.gen_gauss(5, landscape.nin, 1) # fix an f throughout the ru
             self._create_function(var_names)
             Z = self._f_aux(X)
 
             fd = FunctionDetails(x,X, f, Z)
             
-            for b, arg in enumerate(arguments):
+            for b, arg in enumerate(self.arguments):
+                if self.verbose:
+                    print(f"Parameter: {arg}")
                 
                 aq = self.aq(**arg)
                 
                 for c in range(self.iteration_repeats):
+                    if self.verbose:
+                        print(f"Repeat: {c} / {self.iteration_repeats}")
                    
                     self._benchmark(fd, aq, [a,b,c])
         
         
     def _funcInfo(self):
+        if not self.benchmark_array:
+            self._setup()
+        
         return f"""
         Dimension: {landscape.nin}
-        # Repeats: {self.iteration_repeats}
+        
+        ==== Benchmarking config ====
+        # of samples: {self.n_sample}
         # Functions: {self.function_number}
+        Args: {self.arguments}
+        # Repeats: {self.iteration_repeats}
+        # Step Size: {self.n_sample_step_size}
+        # Bacthes: {math.ceil(self.n_sample/self.batch_size) if self.batch_size else None} (of size {self.batch_size})
+        Format: {np.shape(self.benchmark_array)} matrix
+        Format: #funktioner, #argument, #repetitioner, #steg, #batchnr
+        
+        ==== Misc config ====
         nu: {self.nu}
         alpha: {self.alpha}
-        Format: {np.shape(self.benchmark_array)} matrix
+        initial points: {self.init_points}
+        verbose: {self.verbose}
         """
     
     def save(self, fname=""):
+        
+        if not self.benchmark_array:
+            raise Exception("Cannot save before doing a run!")
         
         if not fname:
             t = time.time()
@@ -265,18 +301,7 @@ class Benchmark:
         
         with open(fname+".log", "w") as file:
             with redirect_stdout(file):
-                print(f"===")
-                print(f"Time: {t} ")
-                print(f"Dimension: {landscape.nin}")
-                print(f"# Repeats: {self.iteration_repeats}")
-                print(f"# Functions: {self.function_number}")
-                #print(f"Aq: {aq_base.__name__}")
-                print(f"nu: {self.nu}")
-                print(f"alpha: {self.alpha}")
-                print(f"Format: {np.shape(self.benchmark_array)} matrix")
-                #print(f"Format: #functions x #param. x #repeats")
-                #print(f"Params: {x}")
-                print(f"===")
+               print(self._funcInfo())
     
         np.save(fname, self.benchmark_array)
     
