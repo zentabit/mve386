@@ -173,18 +173,23 @@ class Benchmark:
             comb = np.dstack(fd.mesh_array)
             
             for i in range(n_batches):
+                # Increase to exploit, decreaase to explore. Must be > 0
+                exploit_parameter = 1 
                 if self.verbose:
                     print(f"   Batch {i+1} / {n_batches}")
                     
                 optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
+                # Extracts the aquisition function to sample from
                 acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
                 total_sum = np.sum(acu)
                 weights = [value / total_sum for value in acu]
+                weights = [value**exploit_parameter for value in weights]
                 
                 for j in range(self.batch_size):
+                    # Selects samples from the aquisition function and calculates the values
                     chosen_index = random.choices(range(len(acu)), weights=weights, k=1)[0]
                     next_target[j,:] = np.unravel_index(chosen_index, fd.mesh_array.shape[1:], order='F')
-                    next_target[j,:] = next_target[j,:]/np.max(fd.mesh_array.shape) # Kan behöva dubbelkolla att x1 = x1
+                    next_target[j,:] = next_target[j,:]/np.max(fd.mesh_array.shape)
                     values[j] = fd.f(*next_target[j,:])
                 
                 for k in range(self.batch_size):

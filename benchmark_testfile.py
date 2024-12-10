@@ -15,7 +15,7 @@ aq_arg = {"xi":[5,7,2]}
 
 #
 n_samples = 30 # Lågt för att testa snabbt
-init_points = 3
+init_points = 3 # TODO: Fråga: Bör vara samma som batch_size ?
 function_number = 2
 iter_repeats = 1
 
