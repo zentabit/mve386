@@ -143,7 +143,7 @@ class Benchmark:
             c = 0
             for i in range(self.n_sample+1):
                 if self.verbose:
-                    print(f"Step {i+1} / {self.n_sample}")
+                    print(f"   Step {i+1} / {self.n_sample}")
                 
                 # optimizer.maximize()
                 # {
@@ -173,7 +173,7 @@ class Benchmark:
             
             for i in range(n_batches):
                 if self.verbose:
-                    print(f"Batch {i+1} / {n_batches}")
+                    print(f"   Batch {i+1} / {n_batches}")
                     
                 optimizer._gp.fit(optimizer.space.params, optimizer.space.target)
                 acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
@@ -197,7 +197,7 @@ class Benchmark:
         else:
             for i in range(self.n_sample+1):
                 if self.verbose:
-                    print(f"Sample {i+1} / {self.n_sample}")
+                    print(f"   Sample {i+1} / {self.n_sample}")
                     
                 # optimizer.maximize()
                 # {
@@ -260,7 +260,7 @@ class Benchmark:
         
         for a in range(self.function_number):
             if self.verbose:
-                    print(f"Function number: {a} / {self.function_number}")
+                    print(f"Function number: {a+1} / {self.function_number}")
             
             self.mus, self.covs = landscape.gen_gauss(5, landscape.nin, 1) # fix an f throughout the ru
             self._create_function(var_names)
@@ -270,13 +270,13 @@ class Benchmark:
             
             for b, arg in enumerate(self.arguments):
                 if self.verbose:
-                    print(f"Parameter: {arg}")
+                    print(f" Parameter: {arg}")
                 
                 aq = self.aq(**arg)
                 
                 for c in range(self.iteration_repeats):
                     if self.verbose:
-                        print(f"Repeat: {c} / {self.iteration_repeats}")
+                        print(f"  Repeat: {c} / {self.iteration_repeats}")
                    
                     self._benchmark(fd, aq, [a,b,c])
         
