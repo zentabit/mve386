@@ -235,6 +235,13 @@ class Benchmark:
         
         self._setup()
         
+        if self.batch_size and self.n_sample_step_size:
+            # This is due to the fact that it makes little sense to have both step sizes
+            # and batches together. As such, the implementation only considers one of the 
+            # cases which would be step sizes due to ordering of if-statements.
+            raise ValueError("Only one benchmark of batches and step size should be chosen.")
+        
+        
         x = np.arange(0,1,0.01).reshape(-1,1)
         X = np.array(np.meshgrid(*[x for _ in range(landscape.nin)]))
         var_names = [ f"x{i}" for i in range(0, landscape.nin) ]
