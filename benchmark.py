@@ -286,24 +286,24 @@ class Benchmark:
             self._setup()
         
         return f"""
-        Dimension: {landscape.nin}
-        
-        ==== Benchmarking config ====
-        # of samples: {self.n_sample}
-        # Functions: {self.function_number}
-        Args: {self.arguments}
-        # Repeats: {self.iteration_repeats}
-        # Step Size: {self.n_sample_step_size}
-        # Bacthes: {math.ceil(self.n_sample/self.batch_size) if self.batch_size else None} (of size {self.batch_size})
-        Format: {np.shape(self.benchmark_array)} matrix
-        Format: #funktioner, #argument, #repetitioner, #steg, #batchnr
-        
-        ==== Misc config ====
-        nu: {self.nu}
-        alpha: {self.alpha}
-        initial points: {self.init_points}
-        verbose: {self.verbose}
-        """
+Dimension: {landscape.nin}
+
+==== Benchmarking config ====
+# of samples: {self.n_sample}
+# Functions: {self.function_number}
+Args: {self.arguments}
+# Repeats: {self.iteration_repeats}
+# Step Size: {self.n_sample_step_size}
+# Bacthes: {math.ceil(self.n_sample/self.batch_size) if self.batch_size else None} (of size {self.batch_size})
+Format: {np.shape(self.benchmark_array)} matrix
+Format: #funktioner, #argument, #repetitioner, #steg, #batchnr
+
+==== Misc config ====
+nu: {self.nu}
+alpha: {self.alpha}
+initial points: {self.init_points}
+verbose: {self.verbose}
+"""
     
     def save(self, fname=""):
         
