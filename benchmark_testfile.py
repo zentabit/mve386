@@ -1,48 +1,46 @@
 import benchmark
-
-from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
-import math
-import numpy as np
-from sklearn.gaussian_process.kernels import Matern
-from sklearn.gaussian_process import GaussianProcessRegressor
-from bo_common import *
-from scipy.stats import entropy
-import landscape
-from contextlib import redirect_stdout
-
 
 # Gaussian parameters
+dim = 2
 nu = 1.5
 alpha = 1e-3
 
-
+# Aquisition
 aq_base = acquisition.ExpectedImprovement
 aq_arg = {"xi":[5,7,2]}
-
-# Vill ni köra utan att benchmarka över aq-parametrar använd e
+# Vill ni köra utan att benchmarka över aq-parametrar använd
 # aq_arg = {"xi":[P,P,1]}
 # där P är värdet på parametern ni vill köra
 
-iter_max = 30
-iter_repeats = 2
-        
+#
+n_samples = 30 # Lågt för att testa snabbt
+init_points = 3
+function_number = 2
+iter_repeats = 1
+
+# Välj en av step size/batches
+# Behöver sedan konsekvensändra i funktionsdefinitionen
+# n_sample_step_size = 3
+batch_size = 10
+
+verbose = 1
 
 b = benchmark.Benchmark(
+    dim,
     nu,
     alpha,
     aq_base,
-    iter_max,
-    3,
+    n_samples,
+    init_points,
     aq_params=aq_arg,
     iteration_repeats= iter_repeats,
-    function_number= 2
+    function_number= 2,
+    batch_size= batch_size,
+    verbose=verbose
 )
 
-b.run()
-
-b.save()
-
-b._print()
-
 print(b)
+
+b.run()
+b.save()
