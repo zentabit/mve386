@@ -7,6 +7,10 @@ from matplotlib import gridspec
 import numpy as np
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+# import tikzplotlib
+
+# plt.rcParams['font.family'] = "serif"
+# plt.rcParams['font.serif'] = "mathpazo"
 
 batch_sz = 3 # batch size in LHS
 landscape.peakedness = 100 # set the peakedness to get more extremes
@@ -23,14 +27,14 @@ def posterior(optimizer, grid):
     return mu, sigma
 
 def plot_gp(optimizer, x, y): # Given opt result and target function, plot result and next point to be acquired
-    fig = plt.figure(figsize=(16, 10))
+    fig = plt.figure(figsize=(16, 8))
     steps = len(optimizer.space)
     # fig.suptitle(
     #     'Gaussian Process and Utility Function After {} Steps'.format(steps),
     #     fontsize=30
     # )
 
-    gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
+    gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
     axis = plt.subplot(gs[0])
     acq = plt.subplot(gs[1])
 
@@ -46,12 +50,14 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
 
     axis.fill(np.concatenate([x, x[::-1]]),
               np.concatenate([mu - 1.9600 * sigma, (mu + 1.9600 * sigma)[::-1]]),
-        alpha=.6, fc='c', ec='None', label='95% confidence interval')
+        alpha=.3, fc='c', ec='None', label='95% confidence interval')
 
     axis.set_xlim((0, 1))
     axis.set_ylim((None, None))
-    axis.set_ylabel('f(x)', fontdict={'size':20})
-    axis.set_xlabel('x', fontdict={'size':20})
+    axis.set_ylabel('f(x)', fontdict={'size':18})
+    axis.set_xlabel('x', fontdict={'size':18})
+    axis.set_xticklabels([])
+    axis.set_yticklabels([])
 
     utility_function = optimizer.acquisition_function
     utility = -1 * utility_function._get_acq(gp=optimizer._gp)(x)
@@ -62,8 +68,12 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
              label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
     acq.set_xlim((0, 1))
     #acq.set_ylim((0, np.max(utility) + 0.5))
-    acq.set_ylabel(r"\alpha(x)", fontdict={'size':20})
-    acq.set_xlabel('x', fontdict={'size':20})
+    acq.set_ylabel("$\\alpha(x)$", fontdict={'size':18})
+    acq.set_xlabel('x', fontdict={'size':18})
+    acq.set_xticklabels([])
+    acq.set_yticklabels([])
+
+    fig.tight_layout()
 
     # axis.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
     # acq.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
@@ -73,7 +83,7 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
 
 
 # Some acquisition functions
-acqf = acquisition.UpperConfidenceBound(kappa=3) 
+acqf = acquisition.UpperConfidenceBound(kappa=5) 
 # acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
 # acqf = RGP_UCB(theta = 3)
@@ -107,5 +117,5 @@ optimizer.maximize(init_points=0, n_iter=5)
 mu = plot_gp(optimizer, x, y)
 # print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
 
-plt.show()
+plt.savefig("figures/bo.svg")
 
