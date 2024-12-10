@@ -4,13 +4,14 @@ import math
 import numpy as np
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
-from bo_common import *
 from scipy.stats import entropy
-import landscape
 from contextlib import redirect_stdout
 import random 
-import csv
 import time
+
+# Our files
+from bo_common import *
+import landscape
 
 class FunctionDetails:
     def __init__(self, x,X, exact_f, exact_Z):
