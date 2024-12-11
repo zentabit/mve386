@@ -16,12 +16,14 @@ def plot1d(vals, log, ax, fig):
 def plot2d(vals, log, ax, fig):
     vals_mean_func = np.mean(vals, axis = 0)
     print(np.shape(vals_mean_func))
-    ax.imshow(vals_mean_func[: , 0, 0, : ], norm = 'log')
+    fig.tight_layout()
+    im = ax.imshow(vals_mean_func[: , 0, 0, : ], norm = 'log')
     ax.set_xlabel('')
     ax.set_ylabel('')
     ax.set_xticks(np.arange(0,log['batches'],1))
     ax.set_xticklabels(log['batch_numbers'])
-    fig.tight_layout()
+    fig.colorbar(im, ax = ax)
+    
 
 def main():
     fname = sys.argv[1]
@@ -33,7 +35,7 @@ def main():
 
     fig = plt.figure()
     ax = plt.axes()
-    plot1d(vals, log, ax, fig)
+    plot2d(vals, log, ax, fig)
     plt.show()
 
     
