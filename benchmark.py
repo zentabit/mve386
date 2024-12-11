@@ -8,6 +8,7 @@ from scipy.stats import entropy
 from contextlib import redirect_stdout
 import random 
 import time
+import json
 
 # Our files
 from bo_common import *
@@ -309,7 +310,30 @@ initial points: {self.init_points}
 verbose: {self.verbose}
 """
     
-    def save(self, fname=""):
+    def _funcJSON(self):
+        if self.benchmark_array is None:
+            self._setup()
+            
+        d  = {
+            "samples": self.n_sample,
+            "n_functions": self.function_number,
+            "args": self.arguments,
+            "repeats": self.iteration_repeats,
+            "step_size": self.n_sample_step_size,
+            "batches": (math.ceil(self.n_sample/self.batch_size) if self.batch_size else None),
+            "batch_size": self.batch_size,
+            "batch_numbers": ([self.batch_size * (i+1) for i in range(math.ceil(self.n_sample/self.batch_size))] if self.batch_size else []),
+            "out_shape": list(np.shape(self.benchmark_array)),
+            "dim": landscape.nin,
+            "nu": self.nu,
+            "alpha": self.alpha,
+            "init_points": self.init_points,
+            "verbose": self.verbose        
+        }
+        
+        return d
+    
+    def save(self, fname="", log_format="json"):
         
         if self.benchmark_array is None:
             raise Exception("Cannot save before doing a run!")
@@ -318,11 +342,22 @@ verbose: {self.verbose}
             t = time.time()
             fname="benchmark-{t}"
         
-        with open(fname+".log", "w") as file:
-            with redirect_stdout(file):
-               print(self._funcInfo())
-    
+        
         np.save(fname, self.benchmark_array)
+        if log_format == "log":
+            with open(fname+".log", "w") as file:
+                with redirect_stdout(file):
+                    print(self._funcInfo())
+
+            return
+        
+        # JSON log file
+        
+        j = json.dumps(self._funcJSON(), indent=2)
+        with open(fname+".json", "w") as file:
+            file.write(j)
+        
+        
     
     def _print(self):
         print(self.benchmark_array)
