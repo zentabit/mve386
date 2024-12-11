@@ -81,7 +81,11 @@ class Benchmark:
         for key in self.aq_params.keys():
             start, stop, refinement = self.aq_params[key]
             
-            steps = [start + i *(stop - start)/refinement for i in range(refinement+1)]
+            if not refinement:
+                steps = [start]
+            else:
+                steps = [start + i *(stop - start)/refinement for i in range(refinement+1)]
+                
             d[key] = steps
 
         arguments = []
