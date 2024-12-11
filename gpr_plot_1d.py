@@ -24,7 +24,8 @@ def posterior(optimizer, grid):
     return mu, sigma
 
 def plot_gp(optimizer, x, y): # Given opt result and target function, plot result and next point to be acquired
-    fig = plt.figure(figsize=(16, 10))
+    fig = plt.figure(figsize=(8, 5))
+    
     steps = len(optimizer.space)
 
     x_obs = np.array([[res["params"]["x"]] for res in optimizer.res])
@@ -46,10 +47,15 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
 
     plt.xlim((0, 1))
     plt.ylim((None, None))
-    plt.ylabel('f(x)', fontdict={'size':12})
-    plt.xlabel('x', fontdict={'size':12})
+    plt.ylabel('f(x)', fontdict={'size':18})
+    plt.xlabel('x', fontdict={'size':18})
+    axis = plt.gca()
+    axis.set_xticklabels([])
+    axis.set_yticklabels([])
+
+    fig.tight_layout()
 
     return mu
 
 plot_gp(optimizer, x, trough1d(x))
-plt.show()
+plt.savefig("figures/gpr_ex.svg")
