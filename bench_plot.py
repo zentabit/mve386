@@ -2,16 +2,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-acqf = "ExpectedImprovement"
-timestamp = "1733734363.269824"
-fname = f"points_benchmark-{acqf}-{timestamp}.csv"
+
+timestamp = "1733906073.614063"
+fname = f"benchmark-{timestamp}.npy"
 
 ax = plt.axes()
 
-vals = np.loadtxt(fname, skiprows=1, delimiter=',')
+vals = np.load(fname)
+print(vals)
 print([ str(label) for label in vals[:, 0] ])
 ax.set_yscale('log')
-ax.boxplot(np.transpose(vals[ :, 1: ]),  tick_labels =[ str(int(label)) for label in vals[:, 0] ] )
+ax.boxplot(vals[ :, 0, 0, 0, : ]) #, tick_labels =[ str(int(label)) for label in vals[:, 0] ] )
 ax.set_title("Hej")
 ax.set_xlabel('N')
 ax.set_ylabel('log(Relative entropy)')
