@@ -187,8 +187,14 @@ class Benchmark:
                 # Extracts the aquisition function to sample from
                 acu = -1 * optimizer.acquisition_function._get_acq(gp = optimizer._gp)(comb)
                 total_sum = np.sum(acu)
+                if total_sum == 0.0:
+                    total_sum = 1.0
+                
                 weights = [value / total_sum for value in acu]
                 weights = [value**exploit_parameter for value in weights]
+                if np.sum(weights) == 0.0: # Ibland blir summan av vikterna 0. Isåfall, slumpa bara
+                    print(np.sum(weights))
+                    weights = np.ones(np.shape(weights))
                 
                 for j in range(self.batch_size):
                     # Selects samples from the aquisition function and calculates the values
@@ -345,7 +351,7 @@ verbose: {self.verbose}
         
         if not fname:
             t = time.time()
-            fname=f"benchmark-{t}"
+            fname=f"benchmarks/benchmark-{t}"
         
         
         np.save(fname, self.benchmark_array)

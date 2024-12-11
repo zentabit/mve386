@@ -6,7 +6,8 @@ import sys
 
 def plot1d(vals, log, ax, fig):
     ax.set_yscale('log')
-    ax.boxplot(vals[ :, 0, 0, 0, : ], tick_labels = log['batch_numbers'] )
+    # ax.grid()
+    ax.boxplot(vals[ :, 0, 0, 0, : ], tick_labels = log['batch_numbers'], sym = '' )
     ax.set_title("Hej")
     ax.set_xlabel('N')
     ax.set_ylabel('Relative entropy')
@@ -18,6 +19,7 @@ def plot2d(vals, log, ax, fig):
     ax.imshow(vals_mean_func[: , 0, 0, : ], norm = 'log')
     ax.set_xlabel('')
     ax.set_ylabel('')
+    ax.set_xticks(np.arange(0,log['batches'],1))
     ax.set_xticklabels(log['batch_numbers'])
     fig.tight_layout()
 
@@ -31,7 +33,7 @@ def main():
 
     fig = plt.figure()
     ax = plt.axes()
-    plot2d(vals, log, ax, fig)
+    plot1d(vals, log, ax, fig)
     plt.show()
 
     
