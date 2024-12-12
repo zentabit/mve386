@@ -50,6 +50,7 @@ class Benchmark:
                 iteration_repeats:int = 1,
                 function_number = 1,
                 batch_size = 0,
+                unif_refinement = 0,
                 verbose = 0
                 ):
         
@@ -67,6 +68,7 @@ class Benchmark:
         self.function_number = function_number
         
         self.batch_size = batch_size
+        self.unif_refinement = unif_refinement
         
         self.benchmark_array = None
         self.verbose = verbose
@@ -116,7 +118,6 @@ class Benchmark:
                     d_counter[i] = 0
         
         return arguments
-        
     
     def _benchmark(self,
                 fd : FunctionDetails,
@@ -141,6 +142,17 @@ class Benchmark:
             n_restarts_optimizer=9,
             random_state=optimizer._random_state,
         )
+        
+        
+        
+        if (self.unif_refinement):
+            batch_unifspacing(self.current_refinement, optimizer, fd.f)
+            h_reg =  fd.calcEntropy(optimizer)
+            self.benchmark_array[*index] = h_reg
+            
+            return
+            
+        
 
         presample_lh(self.init_points, optimizer, fd.f)
         
@@ -248,8 +260,19 @@ class Benchmark:
         exec(func_def, globals())   
     
     def _setup(self):
+        if self.iteration_repeats != 1 and self.unif_refinement:
+            raise Exception("Aja baja")
+       
+        
+        if self.unif_refinement:
+            self.benchmark_array = np.zeros((self.function_number, 1, self.unif_refinement, 1, 1))
+            self.arguments = []
+            return
+        
         self.arguments = self._computeAqParams()
         # #funktioner, #argument, #iterationer, #steg, #batchnr
+       
+         
         n_steps =  math.floor(self.n_sample/self.n_sample_step_size) if self.n_sample_step_size is not None else 1
         n_batches = math.ceil(self.n_sample/self.batch_size) if self.batch_size else 1
         
@@ -286,6 +309,17 @@ class Benchmark:
 
             fd = FunctionDetails(x,X, f, Z)
             
+            if self.aq == None or self.aq == dummy_acqf:
+                
+                for ref in range(1,self.unif_refinement + 1):
+                    
+                    self.current_refinement = ref
+                    aq = dummy_acqf()
+                    self._benchmark(fd, aq,[a,0,ref-1,0,0])
+                
+                continue
+            
+            
             for b, arg in enumerate(self.arguments):
                 if self.verbose:
                     print(f" Parameter: {arg}")
@@ -311,6 +345,8 @@ Args: {self.arguments}
 # Repeats: {self.iteration_repeats}
 # Step Size: {self.n_sample_step_size}
 # Bacthes: {math.ceil(self.n_sample/self.batch_size) if self.batch_size else None} (of size {self.batch_size})
+# Uniform: {bool(self.unif_refinement)}
+# Uniform refinement: {self.unif_refinement}
 Format: {np.shape(self.benchmark_array)} matrix
 Format: #funktioner, #argument, #repetitioner, #steg, #batchnr
 
@@ -335,6 +371,8 @@ verbose: {self.verbose}
             "batches": (math.ceil(self.n_sample/self.batch_size) if self.batch_size else None),
             "batch_size": self.batch_size,
             "batch_numbers": ([self.batch_size * (i+1) for i in range(math.ceil(self.n_sample/self.batch_size))] if self.batch_size else []),
+            "unif": bool(self.unif_refinement),
+            "unif_refinement": self.unif_refinement,
             "out_shape": list(np.shape(self.benchmark_array)),
             "dim": landscape.nin,
             "nu": self.nu,
