@@ -14,11 +14,18 @@ def unifrefine(d, nin, refine):
     grid = np.meshgrid(*x)
     return grid
 
+def unifspacing(d, nin, n):
+    delta = 1/(n+1)
+    x = [np.arange(delta, d, delta) for _ in range(nin)]
+    grid = np.meshgrid(*x)
+    return grid
 
 def main():
-    X = unifrefine(1, 2, 3)
+    X = unifspacing(1, 2, 4)
     print(np.shape(X))
-    # print(Y)
+    print(X)
 
     # plotPoints((X,Y))
     plt.show()
+
+# main()
