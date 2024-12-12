@@ -102,11 +102,12 @@ def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by re
     for idx in np.ndindex(*(np.shape(xs)[1:])):
         optimizer.probe(xs[(slice(None),) + idx])
 
-def running_unifrefine(refine, optimizer, f): # Sample in a grid, specified by refine
+def batch_unifrefine(refine, optimizer, f): # Sample in a grid, specified by refine
     xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
 
     for idx in np.ndindex(*(np.shape(xs)[1:])):
         point = f(*xs[(slice(None),) + idx])
         
         optimizer.register(xs[(slice(None),) + idx],point)
-        # optimizer.probe(xs[(slice(None),) + idx])        
+
+    optimizer.suggest() # Finns nåt commando i denna som fittar GPn, bör köra den istället

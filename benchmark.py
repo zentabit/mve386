@@ -173,7 +173,7 @@ class Benchmark:
             values = np.zeros(self.batch_size)
             
             # Behövs tydligen annars fungerar ej
-            optimizer.suggest()
+            optimizer.suggest() # Finns nåt commando i denna som fittar GPn, bör köra den istället
             
             comb = np.dstack(fd.mesh_array)
             
@@ -206,6 +206,7 @@ class Benchmark:
                 for k in range(self.batch_size):
                     optimizer.register(params=next_target[k],target=values[k])
 
+                optimizer.suggest() # Finns nåt commando i denna som fittar GPn, bör köra den istället
 
                 h_reg = fd.calcEntropy(optimizer)
                 
