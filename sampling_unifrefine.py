@@ -14,7 +14,7 @@ def unifrefine(d, nin, refine):
     grid = np.meshgrid(*x)
     return grid
 
-def unifspacing(d, nin, n):
+def unifspacing(d, nin, n): # n is the number of points in each dimension, the spacing will be 1/(n+1)
     delta = 1/(n+1)
     x = [np.arange(delta, d, delta) for _ in range(nin)]
     grid = np.meshgrid(*x)
