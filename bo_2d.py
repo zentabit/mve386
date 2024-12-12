@@ -28,15 +28,18 @@ def posterior(optimizer, grid):
     return mu, sigma
 
 
-def plot_gp_2d(optimizer, x, y, z):
+def plot_gp_2d(optimizer, x, y, z, save = False):
     fig, axs = plt.subplots(2, 2)
+    fig.set_dpi(300)
+    fig.tight_layout()
     X, Y = np.meshgrid(x,y)
     z_min, z_max = z.min(), z.max()
     cmap = 'hot'
     
     ax = axs[0,0]
-    c = ax.pcolor(X, Y, z, cmap = cmap, vmin = z_min, vmax = z_max)
-    ax.set_title('Målfunktion')
+    # c = ax.pcolor(X, Y, z, cmap = cmap, vmin = z_min, vmax = z_max)
+    c = ax.imshow(z, cmap = cmap, interpolation = 'nearest', extent = [0, 1, 0, 1], vmin = z_min, vmax = z_max)
+    ax.set_title(r'$f(x)$')
 
     x_obs = np.array([[res["params"]["x"]] for res in optimizer.res])
     y_obs = np.array([[res["params"]["y"]] for res in optimizer.res])
@@ -48,23 +51,30 @@ def plot_gp_2d(optimizer, x, y, z):
     sigma = np.reshape(sigma, np.shape(X))
     
     ax = axs[0,1]
-    c = ax.pcolor(X, Y, mu, cmap = cmap, vmin = z_min, vmax = z_max)
+    # c = ax.pcolormesh(X, Y, mu, cmap = cmap, vmin = z_min, vmax = z_max, linewidth = 0)
+    # c.set_edgecolor('face')
+    c = ax.imshow(mu, cmap = cmap, interpolation = 'nearest', extent = [0, 1, 0, 1], vmin = z_min, vmax = z_max)
     ax.scatter(x_obs, y_obs, marker = 'x', c='green')
-    ax.set_title('Posterior mean')
+    ax.set_title(r'$\mu_D(x)$')
     ax.set_xlim([0, 1])
     ax.set_ylim([0,1])
 
     ax = axs[1,0]
-    c = ax.pcolor(X, Y, sigma, cmap = cmap, vmin = z_min, vmax = z_max)
-    ax.set_title('Covariance')
+    # c = ax.pcolor(X, Y, sigma, cmap = cmap, vmin = z_min, vmax = z_max)
+    c = ax.imshow(sigma, cmap = cmap, interpolation = 'nearest', extent = [0, 1, 0, 1], vmin = z_min, vmax = z_max)
+    ax.set_title(r'$\sigma_D(x)$')
 
     ax = axs[1,1]
-    c = ax.pcolor(X, Y, np.abs(z - mu), cmap = cmap, vmin = z_min, vmax = z_max)
-    ax.set_title('Mål - mean')
+    c = ax.imshow(np.abs(z - mu), cmap = cmap, interpolation = 'nearest', extent = [0, 1, 0, 1], vmin = z_min, vmax = z_max)
+    # c = ax.pcolor(X, Y, np.abs(z - mu), cmap = cmap, vmin = z_min, vmax = z_max)
+    ax.set_title(r'$|f(x)-\mu_D(x)|$')
 
     fig.subplots_adjust(right=0.8)
     cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
     fig.colorbar(c, cax=cbar_ax)
+
+    if save:
+        plt.savefig('figures/bo_2d.svg')
 
     return mu
 
@@ -72,8 +82,8 @@ def plot_gp_2d(optimizer, x, y, z):
 # acqf = acquisition.UpperConfidenceBound(kappa=10) 
 # acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
-acqf = RGP_UCB(theta = 3)
-# acqf = acquisition.ExpectedImprovement(xi = 6)
+# acqf = RGP_UCB(theta = 3)
+acqf = acquisition.ExpectedImprovement(xi = 8)
 acqd = dummy_acqf()
 
 # Set opt bounds and create target
@@ -108,7 +118,7 @@ optimizer._gp = GaussianProcessRegressor(
     )
 
 # presample_unif(npts - 1, optimizer)
-presample_unifrefine(2, optimizer)
+presample_unifrefine(3, optimizer)
 
 optimizer.maximize(init_points=0, n_iter=1) # by optimising once, we get a nice posterior
 mu = plot_gp_2d(optimizer, x, y, Z)
@@ -140,7 +150,7 @@ optimizer._gp = GaussianProcessRegressor(
 
 # Batching
 
-batches = 1
+batches = 15
 batch_size = 1
 dim = 2
 next_target = np.empty((batch_size,dim),dtype=dict)
@@ -151,7 +161,7 @@ value = np.zeros(batch_size)
 # point = f(**nt)
 # optimizer.register(nt,point)
 
-presample_lh(10,optimizer,f)
+presample_lh(3,optimizer,f)
 
 nt = optimizer.suggest()
 
@@ -172,7 +182,7 @@ for i in range(batches):
     for k in range(batch_size):
         optimizer.register(params=next_target[k],target=value[k])
 
-mu = plot_gp_2d(optimizer, x, y, Z)
+mu = plot_gp_2d(optimizer, x, y, Z, save = True)
 h_reg = entropy(Z.flatten(), np.abs(mu).flatten())
 print(f"Entropy of regression: {h_reg}")
 print(f"h_unif/h_reg = {h_unif/h_reg}")
