@@ -2,7 +2,7 @@ from bayes_opt import acquisition
 import landscape
 import numpy as np
 from scipy.stats import gamma
-from sampling_unifrefine import unifrefine
+from sampling_unifrefine import unifrefine, unifspacing
 from scipy.stats.qmc import LatinHypercube
 import sampling_randUnif
 
@@ -104,6 +104,16 @@ def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by re
 
 def batch_unifrefine(refine, optimizer, f): # Sample in a grid, specified by refine
     xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
+
+    for idx in np.ndindex(*(np.shape(xs)[1:])):
+        point = f(*xs[(slice(None),) + idx])
+        
+        optimizer.register(xs[(slice(None),) + idx],point)
+
+    optimizer.suggest() # Finns nåt commando i denna som fittar GPn, bör köra den istället
+
+def batch_unifspacing(n, optimizer, f): # Sample in a grid, specified by n: the number of points on side of hypercube
+    xs = np.array(unifspacing(landscape.d, landscape.nin, n))
 
     for idx in np.ndindex(*(np.shape(xs)[1:])):
         point = f(*xs[(slice(None),) + idx])
