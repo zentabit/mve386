@@ -96,7 +96,7 @@ Z = f(X,Y)
 x2 = np.arange(0,1,0.01).reshape(-1,1)
 X2 = np.array(np.meshgrid(*[x2 for _ in range(landscape.nin)]))
 
-npts = 49
+npts = 60
 nu = 1.5
 alpha = 1e-3
 # landscape.plot2d(mus, covs)

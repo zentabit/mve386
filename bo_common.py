@@ -110,7 +110,7 @@ def batch_unifrefine(refine, optimizer, f): # Sample in a grid, specified by ref
         
         optimizer.register(xs[(slice(None),) + idx],point)
 
-    optimizer.suggest() # Finns nåt commando i denna som fittar GPn, bör köra den istället
+    optimizer.suggest() # This will fit the GP
 
 def batch_unifspacing(n, optimizer, f): # Sample in a grid, specified by n: the number of points on side of hypercube
     xs = np.array(unifspacing(landscape.d, landscape.nin, n))
@@ -120,4 +120,4 @@ def batch_unifspacing(n, optimizer, f): # Sample in a grid, specified by n: the 
         
         optimizer.register(xs[(slice(None),) + idx],point)
 
-    optimizer.suggest() # Finns nåt commando i denna som fittar GPn, bör köra den istället
+    optimizer.suggest() # This will fit the GP

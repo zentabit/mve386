@@ -2,6 +2,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from scipy.stats import multivariate_normal
+# import benchmarks
+
+benchmark_sizes = [5,10,15,20,30]
+entropy = np.zeros((5,11))
+
+for i in range(np.size(benchmark_sizes)):
+    data = np.load(f"benchmarks/CB/CB-{benchmark_sizes[i]}.npy")
+    print(data.shape)
+    for j in range(data.shape[1]):
+        for k in range(data.shape[0]):
+            entropy[i,j] = entropy[i,j] + data[k,j,0,0,-1]
+entropy = entropy/data.shape[0]
+
+plt.imshow(entropy)
+plt.colorbar()
+plt.show()
+
 
 # peaks = 10
 # a = np.zeros((peaks,2))
@@ -52,12 +69,25 @@ from scipy.stats import multivariate_normal
 # plt.show()
 # 
 # 
-
-
-etta = 2
-tva = 2
-
-for i in range(etta):
-    for j in range(tva):
-        print(i)
-        print(j)
+# run_times = np.array([[4.76507691e-02, 1.85713248e+02],
+#             [2.05746591e-01, 1.04767118e+02],
+#             [1.00079083e-01, 6.89122161e+01],
+#             [2.54073580e-02, 5.23946594e+01],
+#             [3.38734734e-02, 4.00771613e+01],
+#             [8.81170022e-02, 3.56480618e+01],
+#             [1.28597448e-01, 2.94809392e+01],
+#             [1.78325471e-02, 3.33486115e+01],
+#             [2.35131897e-01, 2.51346792e+01],
+#             [5.78387754e-01, 3.17275105e+01]])
+# 
+# x = np.linspace(10,100,10)
+# 
+# plt.title("Entropy")
+# plt.xlabel("Batch size")
+# plt.plot(x,run_times[:,0])
+# plt.show()
+# 
+# plt.title("Run time in seconds")
+# plt.xlabel("Batch size")
+# plt.plot(x,run_times[:,1])
+# plt.show()
