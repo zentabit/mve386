@@ -1,0 +1,63 @@
+{
+  "samples": 60,
+  "n_functions": 25,
+  "args": [
+    {
+      "theta": 1.0
+    },
+    {
+      "theta": 1.9
+    },
+    {
+      "theta": 2.8
+    },
+    {
+      "theta": 3.7
+    },
+    {
+      "theta": 4.6
+    },
+    {
+      "theta": 5.5
+    },
+    {
+      "theta": 6.4
+    },
+    {
+      "theta": 7.3
+    },
+    {
+      "theta": 8.2
+    },
+    {
+      "theta": 9.1
+    },
+    {
+      "theta": 10.0
+    }
+  ],
+  "repeats": 1,
+  "step_size": null,
+  "batches": 4,
+  "batch_size": 15,
+  "batch_numbers": [
+    15,
+    30,
+    45,
+    60
+  ],
+  "unif": false,
+  "unif_refinement": 0,
+  "out_shape": [
+    25,
+    11,
+    1,
+    1,
+    4
+  ],
+  "dim": 2,
+  "nu": 1.5,
+  "alpha": 0.001,
+  "init_points": 15,
+  "verbose": 0
+}

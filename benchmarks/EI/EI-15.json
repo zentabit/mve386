@@ -1,0 +1,63 @@
+{
+  "samples": 60,
+  "n_functions": 25,
+  "args": [
+    {
+      "xi": 3.0
+    },
+    {
+      "xi": 4.2
+    },
+    {
+      "xi": 5.4
+    },
+    {
+      "xi": 6.6
+    },
+    {
+      "xi": 7.8
+    },
+    {
+      "xi": 9.0
+    },
+    {
+      "xi": 10.2
+    },
+    {
+      "xi": 11.4
+    },
+    {
+      "xi": 12.6
+    },
+    {
+      "xi": 13.8
+    },
+    {
+      "xi": 15.0
+    }
+  ],
+  "repeats": 1,
+  "step_size": null,
+  "batches": 4,
+  "batch_size": 15,
+  "batch_numbers": [
+    15,
+    30,
+    45,
+    60
+  ],
+  "unif": false,
+  "unif_refinement": 0,
+  "out_shape": [
+    25,
+    11,
+    1,
+    1,
+    4
+  ],
+  "dim": 2,
+  "nu": 1.5,
+  "alpha": 0.001,
+  "init_points": 15,
+  "verbose": 0
+}
