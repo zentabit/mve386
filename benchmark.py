@@ -179,7 +179,7 @@ class Benchmark:
                     
                     c+= 1
         elif self.batch_size:
-            n_batches = math.ceil(self.n_sample / self.batch_size)
+            n_batches = math.ceil(self.n_sample / self.batch_size) - 1
             
             next_target = np.empty((self.batch_size, landscape.nin), dtype=dict)
             values = np.zeros(self.batch_size)
