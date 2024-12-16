@@ -3,14 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 import sys
+plt.rcParams.update({'font.size': 14})
 
 def plot1d(vals, log, ax, fig):
-    ax.set_yscale('log')
+    # ax.set_yscale('log')
     # ax.grid()
-    ax.boxplot(vals[ :, 0, 0, 0, : ], tick_labels = log['batch_numbers'], sym = '' )
-    ax.set_title("Hej")
+    ax.boxplot(vals[ :, 0, 0, 0, :-1 ], tick_labels = log['batch_numbers'][1:], sym = '' )
+    ax.set_title(fr"RGP-UCB, batch size {log['batch_size']}, $\{list(log['args'][0].keys())[0]} = {list(log['args'][0].values())[0]}$") # cursed
     ax.set_xlabel('N')
-    ax.set_ylabel('Relative entropy')
+    ax.set_ylabel(r"$m(\mu_D)$")
+    ax.set_ylim(0,0.6)
+    fig.set_dpi(300)
     fig.tight_layout()
 
 def plot2d(vals, log, ax, fig):
@@ -35,7 +38,9 @@ def main():
 
     fig = plt.figure()
     ax = plt.axes()
-    plot2d(vals, log, ax, fig)
+    plot1d(vals, log, ax, fig)
+    print(vals[:, 0,0,0,-1])
+    plt.savefig(f"{fname}.svg")
     plt.show()
 
     
