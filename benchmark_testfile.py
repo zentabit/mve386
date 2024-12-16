@@ -13,11 +13,11 @@ nu = 1.5
 alpha = 1e-3
 
 # Aquisition
-aq_base = RGP_UCB
+aq_base = acquisition.UpperConfidenceBound
 # print(aq_base.__name__)
 # aq_arg = {"xi":[3,15,10]} # EI optimum 8
-# aq_arg = {"kappa":[10, 10, 0]} # UCB optimum 8
-aq_arg = {"theta":[5.5, 5.5, 0]} # RGP_UCB optimum 5.5
+aq_arg = {"kappa":[10, 10, 0]} # UCB optimum 8
+# aq_arg = {"theta":[5.5, 5.5, 0]} # RGP_UCB optimum 5.5
 # aq_arg={"delta": [0.304, 0.304, 0]} # GP_UCB_2 optimum 0.6
 # Vill ni köra utan att benchmarka över aq-parametrar använd
 # aq_arg = {"xi":[P,P,0]}
@@ -37,7 +37,7 @@ iter_repeats = 0
 # aq_base = None # Uniform refinement
 # uniform_refinement = 7 #Antalet punkter
 
-batch_sizes = [90]
+batch_sizes = [60]
 verbose = 1
 for i in range(np.size(batch_sizes)):
     batch_size = batch_sizes[i]
@@ -58,6 +58,6 @@ for i in range(np.size(batch_sizes)):
     )
 
     b.run()
-    b.save(fname=f"benchmarks/test_stage2/{aq_base.__name__}/{aq_base.__name__}-{batch_size}")
+    b.save(fname=f"benchmarks/stage2/{aq_base.__name__}/{aq_base.__name__}-{batch_size}")
 
     print(b)
