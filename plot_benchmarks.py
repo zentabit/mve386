@@ -31,6 +31,10 @@ def plotting(acq):
     xticks = [np.round(list((d.values()))[0],2) for d in log["args"]]
     ax.set_xticks(np.arange(np.size(xticks)))
     ax.set_xticklabels(xticks)
+    xlabel = list(log["args"][0])
+    # print(type(xlabel[0]), list(xlabel[0]))
+    ax.set_xlabel(xlabel[0])
+    ax.set_ylabel('Batch size')
 
     plt.imshow(entropy, norm = 'log', cmap='hot')
     plt.colorbar()
