@@ -13,10 +13,10 @@ nu = 1.5
 alpha = 1e-3
 
 # Aquisition
-aq_base = acquisition.UpperConfidenceBound
-print(aq_base.__name__)
+# aq_base = acquisition.UpperConfidenceBound
+# print(aq_base.__name__)
 # aq_arg = {"xi":[3,15,10]} # EI optimum 8
-aq_arg = {"kappa":[10, 10, 0]} # UCB optimum 8
+# aq_arg = {"kappa":[10, 10, 0]} # UCB optimum 8
 # aq_arg = {"theta":[5.5, 5.5, 0]} # RGP_UCB optimum 5.5
 # aq_arg={"delta": [0.304, 0.304, 0]} # GP_UCB_2 optimum 0.6
 # Vill ni köra utan att benchmarka över aq-parametrar använd
@@ -24,7 +24,7 @@ aq_arg = {"kappa":[10, 10, 0]} # UCB optimum 8
 # där P är värdet på parametern ni vill köra
 
 
-n_samples = 360 # Lågt för att testa snabbt
+n_samples = 343 # Lågt för att testa snabbt
 # init_points = 3 # TODO: Fråga: Bör vara samma som batch_size ?
 function_number = 100
 iter_repeats = 0
@@ -34,8 +34,8 @@ iter_repeats = 0
 # n_sample_step_size = 3
 
 
-# aq_base = None # Uniform refinement
-# uniform_refinement = 4 #Antalet punkter
+aq_base = None # Uniform refinement
+uniform_refinement = 7 #Antalet punkter
 
 batch_sizes = [60]
 verbose = 0
@@ -50,10 +50,10 @@ for i in range(np.size(batch_sizes)):
         aq_base,
         n_samples,
         init_points,
-        aq_arg,
+        # aq_arg,
         function_number= function_number,
-        # unif_refinement=uniform_refinement,
-        batch_size=batch_size,
+        unif_refinement=uniform_refinement,
+        # batch_size=batch_size,
         verbose=verbose
     )
 
