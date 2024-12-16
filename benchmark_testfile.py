@@ -8,24 +8,25 @@ from sklearn.exceptions import ConvergenceWarning
 warnings.filterwarnings(action='ignore', category=ConvergenceWarning)
 
 # Gaussian parameters
-dim = 2
+dim = 3
 nu = 1.5
 alpha = 1e-3
 
 # Aquisition
-aq_base = CB
+aq_base = acquisition.UpperConfidenceBound
+print(aq_base.__name__)
 # aq_arg = {"xi":[3,15,10]} # EI optimum 8
-aq_arg = {"kappa":[0, 20, 10]} # UCB optimum 8
-# aq_arg = {"theta":[1, 10, 10]} # RGP_UCB optimum 5.5
-# aq_arg={"delta": [0.01, 0.99, 10]} # GP_UCB_2 optimum 0.6
+aq_arg = {"kappa":[10, 10, 0]} # UCB optimum 8
+# aq_arg = {"theta":[5.5, 5.5, 0]} # RGP_UCB optimum 5.5
+# aq_arg={"delta": [0.304, 0.304, 0]} # GP_UCB_2 optimum 0.6
 # Vill ni köra utan att benchmarka över aq-parametrar använd
 # aq_arg = {"xi":[P,P,0]}
 # där P är värdet på parametern ni vill köra
 
 
-n_samples = 60 # Lågt för att testa snabbt
+n_samples = 360 # Lågt för att testa snabbt
 # init_points = 3 # TODO: Fråga: Bör vara samma som batch_size ?
-function_number = 25
+function_number = 100
 iter_repeats = 0
 
 # Välj en av step size/batches
@@ -36,7 +37,7 @@ iter_repeats = 0
 # aq_base = None # Uniform refinement
 # uniform_refinement = 4 #Antalet punkter
 
-batch_sizes = [5,10,15,20,30]
+batch_sizes = [60]
 verbose = 0
 for i in range(np.size(batch_sizes)):
     batch_size = batch_sizes[i]
@@ -57,6 +58,6 @@ for i in range(np.size(batch_sizes)):
     )
 
     b.run()
-    b.save(fname=f"benchmarks/CB/CB-{batch_size}")
+    b.save(fname=f"benchmarks/stage2/{aq_base.__name__}/{aq_base.__name__}-{batch_size}")
 
     print(b)
