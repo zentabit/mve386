@@ -1,6 +1,6 @@
 __pycache__
 *.csv
 *.log
-# *.npy
-# *.json
+*.npy
+*.json
 *.DS_Store
