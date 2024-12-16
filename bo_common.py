@@ -7,7 +7,7 @@ from scipy.stats.qmc import LatinHypercube
 import sampling_randUnif
 
 class CB(acquisition.AcquisitionFunction): # This is like UCB, but we can also set a parameter beta for mean
-    def __init__(self, random_state = None, beta = 1, kappa = 1):
+    def __init__(self, random_state = None, beta = 0, kappa = 1):
         super().__init__(random_state)
         self.beta = beta
         self.kappa = kappa
