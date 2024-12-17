@@ -146,9 +146,16 @@ class Benchmark:
         
         
         if (self.unif_refinement):
-            batch_unifspacing(self.current_refinement, optimizer, fd.f)
-            h_reg =  fd.calcEntropy(optimizer)
-            self.benchmark_array[*index] = h_reg
+            # Ny som är hot garbo
+            entropy_pts = linreg_unifspacing(self.current_refinement, fd.f, fd.x)
+            
+            h_reg = entropy(fd.Z.flatten(), np.abs(entropy_pts).flatten())
+            self.benchmark_array[*index] = h_reg         
+            
+            # Gammal med GP 
+            # batch_unifspacing(self.current_refinement, optimizer, fd.f)
+            # h_reg =  fd.calcEntropy(optimizer)
+            # self.benchmark_array[*index] = h_reg
             
             return
             

@@ -5,6 +5,7 @@ from scipy.stats import gamma
 from sampling_unifrefine import unifrefine, unifspacing
 from scipy.stats.qmc import LatinHypercube
 import sampling_randUnif
+from sklearn.linear_model import LinearRegression 
 
 class CB(acquisition.AcquisitionFunction): # This is like UCB, but we can also set a parameter beta for mean
     def __init__(self, random_state = None, beta = 0, kappa = 1):
@@ -121,3 +122,37 @@ def batch_unifspacing(n, optimizer, f): # Sample in a grid, specified by n: the 
         optimizer.register(xs[(slice(None),) + idx],point)
 
     optimizer.suggest() # This will fit the GP
+
+def linreg_unifspacing(n, f, x):
+    xs = np.array(unifspacing(landscape.d, landscape.nin, n))
+
+    pts = []
+    vals = []
+    
+    for idx in np.ndindex(*(np.shape(xs)[1:])):
+        p = xs[(slice(None),) + idx]
+        z = f(*p)
+        pts.append(p)
+        vals.append(z)
+    
+    X = np.array(pts)
+    z = np.array(vals)
+
+    
+    reg = LinearRegression()
+    reg.fit(X,z)
+    
+    xs = [x for _ in range(landscape.nin)]
+    Xgrid = np.meshgrid(*xs)
+    out = np.transpose(np.vstack([X.ravel() for X in Xgrid]))
+
+    est = reg.predict(out)
+    
+    # print("===")
+    # print(Z.flatten(), len(Z.flatten()))
+    # print(np.abs(est).flatten(), len(np.abs(est).flatten()))
+    
+    
+    #ent = entropy(Z.flatten(), np.abs(est).flatten())
+
+    return est
