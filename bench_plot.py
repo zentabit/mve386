@@ -12,7 +12,7 @@ def plot1d(vals, log, ax, fig):
     ax.set_title(fr"UCB, batch size {log['batch_size']}, $\{list(log['args'][0].keys())[0]} = {list(log['args'][0].values())[0]}$") # cursed
     ax.set_xlabel('N')
     ax.set_ylabel(r"$m(\mu_D)$")
-    ax.set_ylim(0,1.2)
+    ax.set_ylim(1e-4,1.2)
     fig.set_dpi(300)
     fig.tight_layout()
 
@@ -20,10 +20,10 @@ def plot1d_unif(vals, log, ax, fig):
     ax.set_yscale('log')
     # ax.grid()
     ax.boxplot(vals[ :, 0, :, 0, 0 ], tick_labels = [str(i**3) for i in range(1, 8)], sym = '' )
-    ax.set_title(fr"Unif") # cursed
+    ax.set_title(fr"Uniform sampling with GPR")
     ax.set_xlabel('N')
     ax.set_ylabel(r"$m(\mu_D)$")
-    ax.set_ylim(0,1.2)
+    ax.set_ylim(1e-4,1.2)
     fig.set_dpi(300)
     fig.tight_layout()
 
