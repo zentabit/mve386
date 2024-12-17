@@ -16,7 +16,7 @@ alpha = 1e-3
 aq_base = acquisition.UpperConfidenceBound
 # print(aq_base.__name__)
 # aq_arg = {"xi":[3,15,10]} # EI optimum 8
-aq_arg = {"kappa":[0, 20, 10]} # UCB optimum 8
+# aq_arg = {"kappa":[0, 20, 10]} # UCB optimum 8
 # aq_arg = {"theta":[5.5, 5.5, 0]} # RGP_UCB optimum 5.5
 # aq_arg={"delta": [0.304, 0.304, 0]} # GP_UCB_2 optimum 0.6
 # Vill ni köra utan att benchmarka över aq-parametrar använd
@@ -26,7 +26,7 @@ aq_arg = {"kappa":[0, 20, 10]} # UCB optimum 8
 
 n_samples = 60 # Lågt för att testa snabbt
 # init_points = 3 # TODO: Fråga: Bör vara samma som batch_size ?
-function_number = 100
+function_number = 200
 iter_repeats = 0
 
 # Välj en av step size/batches
