@@ -36,6 +36,8 @@ iter_repeats = 0
 
 # aq_base = None # Uniform refinement
 # uniform_refinement = 7 #Antalet punkter
+# aq_base = None # Uniform refinement
+# uniform_refinement = 7 #Antalet punkter
 
 batch_sizes = [5,10,15,20,30]
 verbose = 0
@@ -51,7 +53,10 @@ for i in range(np.size(batch_sizes)):
         n_samples,
         init_points,
         aq_arg,
+        aq_arg,
         function_number= function_number,
+        # unif_refinement=uniform_refinement,
+        batch_size=batch_size,
         # unif_refinement=uniform_refinement,
         batch_size=batch_size,
         verbose=verbose
