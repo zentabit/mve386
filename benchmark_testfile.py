@@ -8,7 +8,7 @@ from sklearn.exceptions import ConvergenceWarning
 warnings.filterwarnings(action='ignore', category=ConvergenceWarning)
 
 # Gaussian parameters
-dim = 2
+dim = 3
 nu = 1.5
 alpha = 1e-3
 
@@ -16,7 +16,7 @@ alpha = 1e-3
 aq_base = acquisition.UpperConfidenceBound
 # print(aq_base.__name__)
 # aq_arg = {"xi":[3,15,10]} # EI optimum 8
-aq_arg = {"kappa":[0, 20, 10]} # UCB optimum 8
+aq_arg = {"kappa":[14, 14, 0]} # UCB optimum 8
 # aq_arg = {"theta":[5.5, 5.5, 0]} # RGP_UCB optimum 5.5
 # aq_arg={"delta": [0.304, 0.304, 0]} # GP_UCB_2 optimum 0.6
 # Vill ni köra utan att benchmarka över aq-parametrar använd
@@ -24,7 +24,7 @@ aq_arg = {"kappa":[0, 20, 10]} # UCB optimum 8
 # där P är värdet på parametern ni vill köra
 
 
-n_samples = 60 # Lågt för att testa snabbt
+n_samples = 360 # Lågt för att testa snabbt
 # init_points = 3 # TODO: Fråga: Bör vara samma som batch_size ?
 function_number = 100
 iter_repeats = 0
@@ -39,7 +39,7 @@ iter_repeats = 0
 # aq_base = None # Uniform refinement
 # uniform_refinement = 7 #Antalet punkter
 
-batch_sizes = [5,10,15,20,30]
+batch_sizes = [120]
 verbose = 0
 for i in range(np.size(batch_sizes)):
     batch_size = batch_sizes[i]
@@ -53,17 +53,14 @@ for i in range(np.size(batch_sizes)):
         n_samples,
         init_points,
         aq_arg,
-        aq_arg,
         function_number= function_number,
-        # unif_refinement=uniform_refinement,
-        batch_size=batch_size,
         # unif_refinement=uniform_refinement,
         batch_size=batch_size,
         verbose=verbose
     )
 
     b.run()
-    # b.save(fname=f"benchmarks/stage2/{aq_base.__name__}/{aq_base.__name__}-{batch_size}")
-    b.save(fname=f"benchmarks/UCB/UCB-{batch_sizes[i]}")
+    b.save(fname=f"benchmarks/stage2/{aq_base.__name__}/{aq_base.__name__}-{batch_size}")
+    # b.save(fname=f"benchmarks/UCB/UCB-{batch_sizes[i]}")
 
     print(b)
