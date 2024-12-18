@@ -1,10 +1,10 @@
 from bayes_opt import acquisition
-import landscape
+from . import landscape
 import numpy as np
 from scipy.stats import gamma
-from sampling_unifrefine import unifrefine, unifspacing
+from .sampling_unifrefine import unifrefine, unifspacing
 from scipy.stats.qmc import LatinHypercube
-import sampling_randUnif
+from . import sampling_randUnif
 from sklearn.linear_model import LinearRegression 
 
 class CB(acquisition.AcquisitionFunction): # This is like UCB, but we can also set a parameter beta for mean

@@ -1,7 +1,7 @@
-import benchmark
+import lib.benchmark as benchmark
 import numpy as np
 from bayes_opt import acquisition
-from bo_common import RGP_UCB, GP_UCB_2, CB
+from lib.bo_common import RGP_UCB, GP_UCB_2, CB
 
 import warnings
 from sklearn.exceptions import ConvergenceWarning
@@ -16,7 +16,7 @@ alpha = 1e-3
 aq_base = acquisition.UpperConfidenceBound
 # print(aq_base.__name__)
 # aq_arg = {"xi":[3,15,10]} # EI optimum 8
-# aq_arg = {"kappa":[0, 20, 10]} # UCB optimum 8
+aq_arg = {"kappa":[14, 14, 0]} # UCB optimum 8
 # aq_arg = {"theta":[5.5, 5.5, 0]} # RGP_UCB optimum 5.5
 # aq_arg={"delta": [0.304, 0.304, 0]} # GP_UCB_2 optimum 0.6
 # Vill ni köra utan att benchmarka över aq-parametrar använd
@@ -26,7 +26,7 @@ aq_base = acquisition.UpperConfidenceBound
 
 n_samples = 360 # Lågt för att testa snabbt
 # init_points = 3 # TODO: Fråga: Bör vara samma som batch_size ?
-function_number = 200
+function_number = 1
 iter_repeats = 0
 
 # Välj en av step size/batches
@@ -39,8 +39,8 @@ iter_repeats = 0
 # aq_base = None # Uniform refinement
 # uniform_refinement = 7 #Antalet punkter
 
-batch_sizes = [120]
-verbose = 0
+batch_sizes = [5]
+verbose = 1
 for i in range(np.size(batch_sizes)):
     batch_size = batch_sizes[i]
     init_points = batch_size

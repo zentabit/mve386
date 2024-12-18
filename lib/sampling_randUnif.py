@@ -1,18 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats.qmc import LatinHypercube
 
-from sampler import Sampler
+from .sampler import Sampler
 
-class LHSampler(Sampler):
+class UniformSampler(Sampler):
     
     def __init__(self, dim:int):
-        self.lh = LatinHypercube(dim, scramble=False)
+        self.dim = dim
     
     def sample(self, n):
-        return self.lh.random(n)
+        return np.random.rand(n, self.dim)
+    
 
-
+def randUnifSample(dim, batchSize):
+    return np.random.rand(batchSize,dim)
 
 def plotPoints(pointList):
     pts = np.transpose(pointList)
@@ -21,14 +22,13 @@ def plotPoints(pointList):
     y = pts[1]
     
     plt.scatter(x,y,marker="x")
-
-
+    
+    
 def main():
     batchSize = 10
+    dim = 2
 
-    lh = LatinHypercube(2)
-
-        
+    
     plt.ion() # Disable plot locking code execution
     plt.xlim(0,1)
     plt.ylim(0,1)
@@ -36,7 +36,7 @@ def main():
 
     while(True): # CTRL + C to break loop in terminanl
 
-        plotPoints(lh.random(batchSize))
+        plotPoints(randUnifSample(dim, batchSize))
 
 
 

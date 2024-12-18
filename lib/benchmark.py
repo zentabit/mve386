@@ -11,8 +11,8 @@ import time
 import json
 
 # Our files
-from bo_common import *
-import landscape
+from .bo_common import *
+from . import landscape
 
 class FunctionDetails:
     def __init__(self, x,X, exact_f, exact_Z):
