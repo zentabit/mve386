@@ -42,7 +42,7 @@ def plot1d(vals, log, ax, fig):
         ax.add_patch(rect)
 
     # Labels and title
-    ax.set_title(fr"RGP-UCB, batch size {log['batch_size']}, $\{list(log['args'][0].keys())[0]} = {list(log['args'][0].values())[0]}$")
+    ax.set_title(fr"GP-UCB, batch size {log['batch_size']}, $\{list(log['args'][0].keys())[0]} = {list(log['args'][0].values())[0]}$")
     ax.set_xlabel('N')
     ax.set_ylabel(r"$m(\mu_D)$")
     ax.set_ylim(1e-5, 1.2)
@@ -86,8 +86,8 @@ def plot1d_unif(vals, log, ax, fig):
         ax.add_patch(rect)
 
     # Labels and title
-    # ax.set_title(fr"Uniform sampling with GPR")
-    ax.set_title(fr"Uniform sampling with linear regression")
+    ax.set_title(fr"Uniform sampling with GPR")
+    # ax.set_title(fr"Uniform sampling with linear regression")
     ax.set_xlabel('N')
     ax.set_ylabel(r"$m(\mu_D)$")
     ax.set_ylim(1e-5, 1.2)
@@ -120,7 +120,7 @@ def main():
 
     fig = plt.figure()
     ax = plt.axes()
-    plot1d_unif(vals, log, ax, fig)
+    plot1d(vals, log, ax, fig)
     plt.savefig(f"{fname}.svg")
     plt.show()
 
