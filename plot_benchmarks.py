@@ -2,7 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 import sys
+import math
 
+plt.rcParams.update({'font.size': 12})
+prettynames = {'UCB':'(a) UCB', 'EI':'(b) EI', 'CB':'(e) COV', 'GP_UCB':'(c) GP-UCB', 'RGP_UCB':'(d) RGP-UCB'}
 
 def plotting(acq, ax):
     if (acq[1] == "CB"):
@@ -35,20 +38,20 @@ def plotting(acq, ax):
     ax_current.set_xticks(np.arange(np.size(xticks)))
     ax_current.set_xticklabels(xticks)
     xlabel = list(log["args"][0])
-    ax_current.set_xlabel(xlabel[0])
+    ax_current.set_xlabel(fr"$\{xlabel[0]}$")
     ax_current.set_ylabel('Batch size')
     ax_current.set
     img = ax_current.imshow(entropy, norm = 'log', cmap='hot', vmin=0.012, vmax = 0.12)
     # plt.colorbar()
     
 
-    ax_current.set_title(acq[1])
+    ax_current.set_title(prettynames[acq[1]])
     
     return img
 
 
-acqusiotion_names = ["UCB", "EI", "GP_UCB", "CB", "RGP_UCB"]
-fig = plt.figure(layout='constrained', figsize=(10, 6))
+acqusiotion_names = ["UCB", "EI", "GP_UCB", "RGP_UCB", "CB"]
+fig = plt.figure(layout='constrained', figsize=(12, 6))
 subfigs = fig.subfigures(2,1,wspace=0.07)
 
 images = []
@@ -59,7 +62,7 @@ for i in enumerate(acqusiotion_names[:2]):
     images.append(img)
 
 # Second subfigure with a custom size for the middle plot
-sub_ax2 = subfigs[1].add_gridspec(1, 3, width_ratios=[1,0.1,1], wspace = 0)  # Customize the width ratios
+sub_ax2 = subfigs[1].add_gridspec(1, 3, width_ratios=[1,1,0.1], wspace = 0)  # Customize the width ratios
 ax2_left = fig.add_subplot(sub_ax2[0, 0])
 ax2_middle = fig.add_subplot(sub_ax2[0, 1])
 ax2_right = fig.add_subplot(sub_ax2[0, 2])
