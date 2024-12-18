@@ -8,6 +8,8 @@ from matplotlib import gridspec
 import numpy as np
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
+
+plt.rcParams.update({'font.size': 14})
 # import tikzplotlib
 
 # plt.rcParams['font.family'] = "serif"
@@ -57,8 +59,8 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
     axis.set_ylim((None, None))
     axis.set_ylabel('f(x)', fontdict={'size':18})
     axis.set_xlabel('x', fontdict={'size':18})
-    axis.set_xticklabels([])
-    axis.set_yticklabels([])
+    # axis.set_xticklabels([])
+    # axis.set_yticklabels([])
 
     utility_function = optimizer.acquisition_function
     utility = -1 * utility_function._get_acq(gp=optimizer._gp)(x)
@@ -71,8 +73,8 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
     #acq.set_ylim((0, np.max(utility) + 0.5))
     acq.set_ylabel("$\\alpha(x)$", fontdict={'size':18})
     acq.set_xlabel('x', fontdict={'size':18})
-    acq.set_xticklabels([])
-    acq.set_yticklabels([])
+    # acq.set_xticklabels([])
+    # acq.set_yticklabels([])
 
     fig.tight_layout()
 
@@ -84,11 +86,11 @@ def plot_gp(optimizer, x, y): # Given opt result and target function, plot resul
 
 
 # Some acquisition functions
-acqf = acquisition.UpperConfidenceBound(kappa=5) 
+# acqf = acquisition.UpperConfidenceBound(kappa=5) 
 # acqf = CB(beta=0, kappa=1)
 # acqf = GP_UCB_2()
 # acqf = RGP_UCB(theta = 3)
-# acqf = acquisition.ExpectedImprovement(xi = 10)
+acqf = acquisition.ExpectedImprovement(xi = 5.4)
 
 # Set opt bounds and create target
 pbounds = {'x': (0,1)}
@@ -113,10 +115,11 @@ optimizer._gp = GaussianProcessRegressor(
     random_state=optimizer._random_state,
     )
 
-optimizer.maximize(init_points=0, n_iter=5)
+optimizer.maximize(init_points=0, n_iter=15)
 
 mu = plot_gp(optimizer, x, y)
 # print(f"Entropy of regression: {entropy(y, np.abs(mu))}")
 
 plt.savefig("figures/bo.svg")
+plt.show()
 
