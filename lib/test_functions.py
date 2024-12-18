@@ -1,3 +1,7 @@
+"""test_functions
+This file contains fixed test functions
+"""
+
 from . import landscape
 import numpy as np
 import matplotlib.pyplot as plt

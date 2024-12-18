@@ -1,3 +1,8 @@
+"""landscape
+This file generates test functions as sums of gaussian peaks by randomising
+mean and covariance.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal

@@ -1,3 +1,7 @@
+""" benchmark
+This file contains the main class that handles benchmarking
+"""
+
 from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
 import math

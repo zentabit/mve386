@@ -1,3 +1,8 @@
+""" bo_common
+This file contains custom acquisition functions COV (CB), GP_UCB and RGP_UCB,
+together with presampling routines.
+"""
+
 from bayes_opt import acquisition
 from . import landscape
 import numpy as np
