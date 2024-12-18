@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats.qmc import LatinHypercube
 
-from .sampler import Sampler
+from lib.sampler import Sampler
 
 class LHSampler(Sampler):
     

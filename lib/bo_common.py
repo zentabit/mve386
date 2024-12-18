@@ -50,9 +50,8 @@ class RGP_UCB(acquisition.AcquisitionFunction):
     
     def suggest(self, gp, target_space, n_random = 10000, n_l_bfgs_b = 10, fit_gp = True):
         kappa = np.max([np.log(((self.i+1)**2 + 1)/np.sqrt(2 * np.pi)) / np.log(1 + self.theta/2), 1e-9])
-        # print(np.log(((self.i+1)**2 + 1)/np.sqrt(2 * np.pi)))
         self.beta = gamma.rvs(kappa, self.theta)
-        # print(self.beta)
+
         return super().suggest(gp, target_space, n_random, n_l_bfgs_b, fit_gp)
     
 class thompson_sampling(acquisition.AcquisitionFunction):
@@ -94,7 +93,6 @@ def presample_lh(npoints, optimizer, f): # Create a LHS and update the optimizer
     for x in xs:
         point = f(*x)
         optimizer.register(x,point)
-        # optimizer.probe(x)
 
 def presample_unif(npoints, optimizer): # Sample uniformly and update the optimizer
     xs = sampling_randUnif.randUnifSample(landscape.nin, npoints)

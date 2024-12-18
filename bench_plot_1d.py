@@ -1,5 +1,5 @@
 ''' bench_plot_1d
-Load .npy and .json file for a run and plot the results. 
+Load .npy and .json file for a run and plot the results as box plots.
 Takes one argument: fname, which is the relative file path without file
 extension
 '''

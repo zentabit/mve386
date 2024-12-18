@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from random import sample
-from .sampler import Sampler
+from lib.sampler import Sampler
 
 class Uniform2DMeshSampler(Sampler):
     def __init__(self, res):

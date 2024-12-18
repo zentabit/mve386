@@ -1,3 +1,6 @@
+'''plot_benchmarks
+Load .npy and .json file for a run and plot the results as 2D images.
+'''
 import matplotlib.pyplot as plt
 import numpy as np
 import json

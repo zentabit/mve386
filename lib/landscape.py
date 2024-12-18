@@ -65,13 +65,3 @@ def f_sca(x, mus, covs): # calculate f when M = 1
         y += rv.pdf(x)
 
     return y
-
-# mus, covs = gen_gauss(nfunc, nin, d)
-# muss, covss = gen_gauss_vec(nfunc, nin, nout, d)
-# mus = muss[..., 0]
-# covs = covss[..., 0]
-# print(np.shape(muss[..., 0]))
-# print(f_sca((0.5, 0.5), mus, covs))
-# print(f_vec((0.5, 0.5), muss, covss))
-
-# plot1d(mus, covs)
