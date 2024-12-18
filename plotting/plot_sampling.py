@@ -1,6 +1,7 @@
-from sampling_lh import LHSampler
-from sampling_randUnif import UniformSampler
-from sampling_unifrefine import unifrefine
+# run with python3 -m plotting.plot_sampling from ..
+from lib.sampling_lh import LHSampler
+from lib.sampling_randUnif import UniformSampler
+from lib.sampling_unifrefine import unifrefine
 import matplotlib.pyplot as plt
 import numpy as np
 

@@ -1,7 +1,8 @@
+# run with python3 -m plotting.gpr_plot_1d from ..
 import numpy as np
 from bayes_opt import BayesianOptimization
 from bayes_opt.acquisition import UpperConfidenceBound
-from test_functions import trough1d
+from lib.test_functions import trough1d
 import matplotlib.pyplot as plt
 
 pbounds = {'x': (0,1)}

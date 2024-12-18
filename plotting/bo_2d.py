@@ -1,11 +1,12 @@
+# run with python3 -m plotting.bo_2d from ..
 from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
-import landscape
+from lib import landscape
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import entropy, gamma
-import test_functions
-from bo_common import *
+from lib import test_functions
+from lib.bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 import random

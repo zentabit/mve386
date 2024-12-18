@@ -1,12 +1,13 @@
+# run with python3 -m plotting.bo_1d from ..
 from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
-import landscape
+from lib import landscape
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 from scipy.stats import entropy, gamma
-import test_functions
-from bo_common import *
+from lib import test_functions
+from lib.bo_common import *
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
 import random
@@ -103,7 +104,7 @@ optimizer = BayesianOptimization(
     f = f,
     pbounds=pbounds,
     acquisition_function=acqd,
-    verbose = 0,
+    verbose = 1,
     random_state=0
 )
 optimizer._gp = GaussianProcessRegressor(

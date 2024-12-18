@@ -1,7 +1,8 @@
+# run with python3 -m plotting.plot_BO_1d from ..
 from bayes_opt import BayesianOptimization
 from bayes_opt import acquisition
-from landscape import f_sca, gen_gauss
-import landscape
+from lib.landscape import f_sca, gen_gauss
+from lib import landscape
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
