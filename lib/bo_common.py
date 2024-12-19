@@ -106,6 +106,12 @@ def presample_unifrefine(refine, optimizer): # Sample in a grid, specified by re
     for idx in np.ndindex(*(np.shape(xs)[1:])):
         optimizer.probe(xs[(slice(None),) + idx])
 
+def presample_unifspacing(n, optimizer): # Sample in a grid, specified by n
+    xs = np.array(unifspacing(landscape.d, landscape.nin, n))
+    
+    for idx in np.ndindex(*(np.shape(xs)[1:])):
+        optimizer.probe(xs[(slice(None),) + idx])
+
 def batch_unifrefine(refine, optimizer, f): # Sample in a grid, specified by refine
     xs = np.array(unifrefine(landscape.d, landscape.nin, refine))
 
