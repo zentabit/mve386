@@ -4,7 +4,7 @@ import test_functions
 from sampler import Sampler
 from sampling_randMeshUnif import Uniform2DMeshSampler
 from sampling_randUnif import UniformSampler
-from sampling_lh import LHSampler
+from lib.sampling_lh import LHSampler
 
 from test_functions import *
 
