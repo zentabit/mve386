@@ -19,9 +19,13 @@ def plot2d(mus, covs): # plots N = 2, M = 1 distributions on [0,d]^2 (implicity 
     y = f_sca(pos, mus, covs)
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    ax.plot_surface(x1,x2,y, vmin=y.min() * 2)
+    ax.plot_surface(x1,x2,y, vmin=y.min() * 2, cmap = 'hot')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
 
     plt.show()
+    plt.savefig('fig.png', transparent = True)
 
 def plot1d(mus, covs): # plots N = 1, M = 1 distributions on [0,d] (implicity assuming M = 1)
     x1 = np.arange(0,1,0.001)
