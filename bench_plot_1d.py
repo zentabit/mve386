@@ -45,8 +45,8 @@ def plot1d(vals, log, ax, fig, unif = False):
         ax.add_patch(rect)
 
     if unif:
-        ax.set_title(fr"Uniform sampling with GPR")
-        # ax.set_title(fr"Uniform sampling with linear regression")
+        # ax.set_title(fr"Uniform sampling with GPR")
+        ax.set_title(fr"Uniform sampling with linear interpolation")
     else:
         ax.set_title(fr"GP-UCB, batch size {log['batch_size']}, $\{list(log['args'][0].keys())[0]} = {list(log['args'][0].values())[0]}$")
     
